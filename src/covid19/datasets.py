@@ -41,7 +41,7 @@ class RnboGovUa:
             # 'recovered',
             'existing',
             # 'suspicion',
-            # 'delta_confirmed',
+            'delta_confirmed',
             # 'delta_deaths',
             # 'delta_recovered',
             # 'delta_existing',

@@ -39,7 +39,8 @@ def main():
     data = ds.prepare(['ukraine'])
     # data = data.drop(columns=['country'])
     # print(data.head(10))
-    data = data.groupby(['idx', 'country', 'date']).sum('existing').reset_index()
+    data.to_csv('dataset.csv')
+    # data = data.groupby(['idx', 'country', 'date']).sum('existing', 'delta_confirmed').reset_index()
     print(data.head(10))
     #data['day_of_week'] = data['date'].dt.day_name()
     for idx, day_name in enumerate(calendar.day_name):
@@ -49,25 +50,28 @@ def main():
     print(data.head(10))
     # exit(1)
     training_cutoff = data["idx"].max() - max_prediction_length
-    group_ids = ['country']
+    group_ids = ['country', 'region']
 
     training = TimeSeriesDataSet(
         data[lambda x: x.idx <= training_cutoff],
         time_idx="idx",
-        target='existing',
+        target='delta_confirmed',
         group_ids=group_ids,
         # min_encoder_length=max_encoder_length // 2,  # keep encoder length long (as it is in the validation set)
         max_encoder_length=max_encoder_length,
         # min_prediction_length=1,
         max_prediction_length=max_prediction_length,
-        # static_categoricals=['weekday'],
+        static_categoricals=group_ids,
         # static_reals=groups,
         # time_varying_known_categoricals=["special_days", "month"],
         # variable_groups={"day_name": list(calendar.day_name)},  # group of categorical variables can be treated as one variable
         # time_varying_known_categoricals=['day_name'],
         # time_varying_known_reals=list(calendar.day_name),
         # time_varying_unknown_categoricals=[],
-        time_varying_unknown_reals=['existing'],
+        time_varying_unknown_reals=[
+            # 'existing',
+            'delta_confirmed'
+        ],
         # [
         #     "volume",
         #     "log_volume",
