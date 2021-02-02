@@ -63,8 +63,8 @@ def main():
         # static_categoricals=['weekday'],
         # static_reals=groups,
         # time_varying_known_categoricals=["special_days", "month"],
-        variable_groups={"day_name": list(calendar.day_name)},  # group of categorical variables can be treated as one variable
-        time_varying_known_categoricals=['day_name'],
+        # variable_groups={"day_name": list(calendar.day_name)},  # group of categorical variables can be treated as one variable
+        # time_varying_known_categoricals=['day_name'],
         # time_varying_known_reals=list(calendar.day_name),
         # time_varying_unknown_categoricals=[],
         time_varying_unknown_reals=['value'],
@@ -79,7 +79,7 @@ def main():
         # ],
         # randomize_length=None,
         target_normalizer=GroupNormalizer(
-            groups=group_ids#, transformation="softplus"
+            groups=group_ids, #, transformation="softplus"
         ),
             # groups=groups, transformation="softplus"
         # ),  # use softplus and normalize by group
@@ -127,7 +127,7 @@ def main():
     pl.seed_everything(42)
 
 
-    if 1:
+    if 0:
         net = TemporalFusionTransformer.from_dataset(
             training,
             learning_rate=learning_rate,
@@ -137,7 +137,7 @@ def main():
             # hidden_continuous_size=8,
             # output_size=7,  # 7 quantiles by default
             # loss=QuantileLoss(),
-            log_interval=10,  # uncomment for learning rate finder and otherwise, e.g. to 10 for logging every 10 batches
+            # log_interval=10,  # uncomment for learning rate finder and otherwise, e.g. to 10 for logging every 10 batches
             # reduce_on_plateau_patience=4,
         )
         #print(f"Number of parameters in network: {tft.size() / 1e3:.1f}k")
@@ -149,12 +149,13 @@ def main():
             # num_block_layers=[4, 4],
             learning_rate=learning_rate,
             # log_interval=10,
-            log_val_interval=1, log_gradient_flow=False,
+            # log_val_interval=1,
+            log_gradient_flow=False,
             weight_decay=weight_decay,
             # reduce_on_plateau_patience=50
         )
 
-    if 0:
+    if 1:
         net = DeepAR.from_dataset(
             training,
             # learning_rate=3e-2,
@@ -162,9 +163,10 @@ def main():
             hidden_size=32,
             dropout=0.1,
             loss=NormalDistributionLoss(),
-            log_interval=10,
-            log_val_interval=3,
-            weight_decay=1e-2
+            log_interval=1.0,
+            # log_val_interval=100,
+            weight_decay=1e-2,
+            optimizer='adamw'
         )
 
     print(f"Number of parameters in network: {net.size() / 1e3:.1f}k")
