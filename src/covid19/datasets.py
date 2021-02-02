@@ -39,9 +39,9 @@ class RnboGovUa:
             # 'confirmed',
             # 'deaths',
             # 'recovered',
-            # 'existing',
+            'existing',
             # 'suspicion',
-            'delta_confirmed',
+            # 'delta_confirmed',
             # 'delta_deaths',
             # 'delta_recovered',
             # 'delta_existing',
@@ -91,10 +91,12 @@ class RnboGovUa:
             'date': deque(),
             'country': deque(),
             'region': deque(),
-            'series': deque(),
+            # 'series': deque(),
             # 'weekday': deque(),
-            'value': deque()
+            # 'value': deque()
         }
+        for value_name in self._series:
+            columns[value_name] = deque()
 
         # for weekday in list(calendar.day_name):
         #     columns[weekday] = deque()
@@ -124,13 +126,15 @@ class RnboGovUa:
                 #         }
                 #     )
 
+
+                    columns['idx'].append(idx)
+                    columns['date'].append(date)
+                    columns['country'].append(country_name)
+                    columns['region'].append(region_data['label']['en'])
                     for sname in self._series:
-                        columns['idx'].append(idx)
-                        columns['date'].append(date)
-                        columns['country'].append(country_name)
-                        columns['region'].append(region_data['label']['en'])
-                        columns['series'].append(sname)
-                        columns['value'].append(region_data[sname])
+                        columns[sname].append(region_data[sname])
+                    # columns['series'].append(sname)
+                    # columns['value'].append(region_data[sname])
                         # current_weekday = date.strftime('%A')
                         # for weekday in list(calendar.day_name):
                         #     columns[weekday].append(current_weekday if current_weekday == weekday else "-")

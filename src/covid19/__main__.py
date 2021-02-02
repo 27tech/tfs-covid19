@@ -37,9 +37,9 @@ def main():
     # OpenWorldDataset.download(Path('owid-covid-latest.csv'))
     ds = RnboGovUa('data')
     data = ds.prepare(['ukraine'])
-    data = data.drop(columns=['country'])
+    # data = data.drop(columns=['country'])
     # print(data.head(10))
-    data = data.groupby(['idx', 'date', 'series']).sum('value').reset_index()
+    data = data.groupby(['idx', 'country', 'date']).sum('existing').reset_index()
     print(data.head(10))
     #data['day_of_week'] = data['date'].dt.day_name()
     for idx, day_name in enumerate(calendar.day_name):
@@ -49,16 +49,16 @@ def main():
     print(data.head(10))
     # exit(1)
     training_cutoff = data["idx"].max() - max_prediction_length
-    group_ids = ['series']
+    group_ids = ['country']
 
     training = TimeSeriesDataSet(
         data[lambda x: x.idx <= training_cutoff],
         time_idx="idx",
-        target='value',
+        target='existing',
         group_ids=group_ids,
-        min_encoder_length=max_encoder_length // 2,  # keep encoder length long (as it is in the validation set)
+        # min_encoder_length=max_encoder_length // 2,  # keep encoder length long (as it is in the validation set)
         max_encoder_length=max_encoder_length,
-        min_prediction_length=1,
+        # min_prediction_length=1,
         max_prediction_length=max_prediction_length,
         # static_categoricals=['weekday'],
         # static_reals=groups,
@@ -67,7 +67,7 @@ def main():
         # time_varying_known_categoricals=['day_name'],
         # time_varying_known_reals=list(calendar.day_name),
         # time_varying_unknown_categoricals=[],
-        time_varying_unknown_reals=['value'],
+        time_varying_unknown_reals=['existing'],
         # [
         #     "volume",
         #     "log_volume",
@@ -77,7 +77,7 @@ def main():
         #     "avg_volume_by_agency",
         #     "avg_volume_by_sku",
         # ],
-        # randomize_length=None,
+        randomize_length=None,
         target_normalizer=GroupNormalizer(
             groups=group_ids, #, transformation="softplus"
         ),
