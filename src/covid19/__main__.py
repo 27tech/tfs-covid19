@@ -89,8 +89,8 @@ def main():
         # ),  # use softplus and normalize by group
         # add_relative_time_idx=True,
         add_target_scales=True,
-        # add_encoder_length=True,
-        # add_relative_time_idx=True,
+        add_encoder_length=True,
+        add_relative_time_idx=True,
           # add_target_scales=True,  # add as feature
           # add_encoder_length=True,
         # allow_missings=True
