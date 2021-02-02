@@ -88,7 +88,7 @@ def main():
             # groups=groups, transformation="softplus"
         # ),  # use softplus and normalize by group
         # add_relative_time_idx=True,
-        # add_target_scales=True,
+        add_target_scales=True,
         # add_encoder_length=True,
         # add_relative_time_idx=True,
           # add_target_scales=True,  # add as feature
@@ -167,8 +167,9 @@ def main():
             hidden_size=32,
             dropout=0.1,
             loss=NormalDistributionLoss(),
-            log_interval=1.0,
+            # log_interval=1.0,
             # log_val_interval=100,
+            log_gradient_flow=False,
             weight_decay=1e-2,
             optimizer='adamw'
         )
