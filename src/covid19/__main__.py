@@ -108,9 +108,9 @@ def main():
     # for key, value in x.items():
     #     print(f"\t{key} = {value.size()}")
 
-    learning_rate = 0.03 #1e-1
+    learning_rate = 1e-1
     gradient_clip_val = 0.1
-    batch_size = 32  # set this between 32 to 128
+    batch_size = 64  # set this between 32 to 128
     weight_decay = 0.001
 
     # create validation set (predict=True) which means to predict the last max_prediction_length points in time
@@ -118,8 +118,8 @@ def main():
     validation = TimeSeriesDataSet.from_dataset(training, data, predict=True, stop_randomization=True)
 
     # create dataloaders for model
-    train_dataloader = training.to_dataloader(train=True, batch_size=batch_size, num_workers=2)
-    val_dataloader = validation.to_dataloader(train=False, batch_size=batch_size, num_workers=2)
+    train_dataloader = training.to_dataloader(train=True, batch_size=batch_size, num_workers=8)
+    val_dataloader = validation.to_dataloader(train=False, batch_size=batch_size, num_workers=8)
 
     early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=100, verbose=True, mode="min")
     # early_stop_callback = EarlyStopping(monitor="val_MAE", min_delta=1e-1, patience=100, verbose=True, mode="max")
