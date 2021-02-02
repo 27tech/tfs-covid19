@@ -90,7 +90,7 @@ def main():
         # add_relative_time_idx=True,
         add_target_scales=True,
         add_encoder_length=True,
-        # add_relative_time_idx=True,
+        add_relative_time_idx=True,
           # add_target_scales=True,  # add as feature
           # add_encoder_length=True,
         # allow_missings=True
@@ -108,7 +108,7 @@ def main():
     # for key, value in x.items():
     #     print(f"\t{key} = {value.size()}")
 
-    learning_rate = 1e-1
+    learning_rate = 0.03
     gradient_clip_val = 0.1
     batch_size = 32  # set this between 32 to 128
     weight_decay = 0.001
