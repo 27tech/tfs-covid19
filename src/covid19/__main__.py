@@ -91,8 +91,8 @@ def main():
         # add_target_scales=True,
         # add_encoder_length=True,
         # add_relative_time_idx=True,
-          add_target_scales=True,  # add as feature
-          add_encoder_length=True,
+          # add_target_scales=True,  # add as feature
+          # add_encoder_length=True,
         # allow_missings=True
     )
 
@@ -110,7 +110,7 @@ def main():
 
     learning_rate = 1e-1
     gradient_clip_val = 0.1
-    batch_size = 128  # set this between 32 to 128
+    batch_size = 32  # set this between 32 to 128
     weight_decay = 0.001
 
     # create validation set (predict=True) which means to predict the last max_prediction_length points in time
