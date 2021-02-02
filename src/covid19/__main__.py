@@ -188,7 +188,7 @@ def main():
     if 1:
         trainer = pl.Trainer(
             max_epochs=1000,
-            gpus=0,
+            gpus=4 if torch.cuda.is_available() else 0,
             weights_summary="top",
             gradient_clip_val=gradient_clip_val,
             limit_train_batches=100.,  # coment in for training, running valiation every 30 batches
