@@ -193,6 +193,7 @@ def main():
 
     if 1:
         trainer = pl.Trainer(
+            accelerator="dp",
             max_epochs=1000,
             gpus=[1,2] if torch.cuda.is_available() else 0,
             weights_summary="top",
