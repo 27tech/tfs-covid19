@@ -67,8 +67,8 @@ def main():
         static_categoricals=group_ids,
         # static_reals=groups,
         # time_varying_known_categoricals=["special_days", "month"],
-        variable_groups={"day_name": list(calendar.day_name)},  # group of categorical variables can be treated as one variable
-        time_varying_known_categoricals=['day_name'],
+        # variable_groups={"day_name": list(calendar.day_name)},  # group of categorical variables can be treated as one variable
+        # time_varying_known_categoricals=['day_name'],
         # time_varying_known_reals=list(calendar.day_name),
         # time_varying_unknown_categoricals=[],
         time_varying_unknown_reals=[
@@ -91,9 +91,9 @@ def main():
             # groups=groups, transformation="softplus"
         # ),  # use softplus and normalize by group
         # add_relative_time_idx=True,
-        add_target_scales=True,
-        add_encoder_length=True,
-        add_relative_time_idx=True,
+        # add_target_scales=True,
+        # add_encoder_length=True,
+        # add_relative_time_idx=True,
           # add_target_scales=True,  # add as feature
           # add_encoder_length=True,
         #allow_missings=True
