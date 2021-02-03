@@ -219,7 +219,8 @@ def main():
             # ),
             default_root_dir='checkpoints',
             benchmark=True,
-            deterministic=True
+            deterministic=True,
+            profiler=True,
 
         )
 
