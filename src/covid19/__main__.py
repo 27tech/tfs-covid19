@@ -118,7 +118,7 @@ def main():
     # create validation set (predict=True) which means to predict the last max_prediction_length points in time
     # for each series
     validation = TimeSeriesDataSet.from_dataset(training, data, predict=True, stop_randomization=True)
-
+    print(len(training))
     # create dataloaders for model
     train_dataloader = training.to_dataloader(train=True, batch_size=batch_size, num_workers=8)
     val_dataloader = validation.to_dataloader(train=False, batch_size=batch_size, num_workers=8)
@@ -169,7 +169,7 @@ def main():
             hidden_size=8,
             dropout=0.1,
             loss=NormalDistributionLoss(),
-            # log_interval=1.0,
+            log_interval=1.0,
             # log_val_interval=100,
             log_gradient_flow=False,
             weight_decay=1e-2,
@@ -201,7 +201,7 @@ def main():
             gpus=[1] if torch.cuda.is_available() else 0,
             weights_summary="top",
             gradient_clip_val=gradient_clip_val,
-            limit_train_batches=100.,  # coment in for training, running valiation every 30 batches
+            # limit_train_batches=100.,  # coment in for training, running valiation every 30 batches
             # fast_dev_run=True,  # comment in to check that networkor dataset has no serious bugs
             callbacks=[
                 lr_logger,
