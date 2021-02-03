@@ -31,7 +31,7 @@ from pytorch_forecasting.data.examples import generate_ar_data
 
 def main():
     max_prediction_length = 7
-    max_encoder_length = 28*2
+    max_encoder_length = 28
 
     logger = getLogger(__name__)
     # OpenWorldDataset.download(Path('owid-covid-latest.csv'))
@@ -57,7 +57,7 @@ def main():
         time_idx="idx",
         target='delta_confirmed',
         group_ids=group_ids,
-        # min_encoder_length=max_encoder_length // 2,  # keep encoder length long (as it is in the validation set)
+        min_encoder_length=max_encoder_length // 2,  # keep encoder length long (as it is in the validation set)
         max_encoder_length=max_encoder_length,
         # min_prediction_length=1,
         max_prediction_length=max_prediction_length,
@@ -203,7 +203,7 @@ def main():
             # fast_dev_run=True,  # comment in to check that networkor dataset has no serious bugs
             callbacks=[
                 lr_logger,
-                # early_stop_callback,
+                early_stop_callback,
                 checkpoint_callback
             ],
             logger=TensorBoardLogger(
