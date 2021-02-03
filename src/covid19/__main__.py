@@ -221,7 +221,7 @@ def main():
             benchmark=True,
             deterministic=True,
             profiler=True,
-
+            enable_pl_optimizer=True
         )
 
         # fit network
