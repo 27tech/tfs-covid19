@@ -203,6 +203,7 @@ def main():
             gradient_clip_val=gradient_clip_val,
             # limit_train_batches=100.,  # coment in for training, running valiation every 30 batches
             # fast_dev_run=True,  # comment in to check that networkor dataset has no serious bugs
+            log_every_n_steps=1000,
             callbacks=[
                 lr_logger,
                 early_stop_callback,
