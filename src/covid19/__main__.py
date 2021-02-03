@@ -111,7 +111,7 @@ def main():
     # for key, value in x.items():
     #     print(f"\t{key} = {value.size()}")
 
-    learning_rate = 0.01
+    learning_rate = 0.1
     gradient_clip_val = 0.01
     batch_size = 64  # set this between 32 to 128
     weight_decay = 0.001
@@ -124,7 +124,9 @@ def main():
     train_dataloader = training.to_dataloader(train=True, batch_size=batch_size, num_workers=8)
     val_dataloader = validation.to_dataloader(train=False, batch_size=batch_size, num_workers=8)
 
-    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=50, verbose=True, mode="min")
+    early_stop_patience = 20
+    reduce_on_plateau_patience = early_stop_patience // 2
+    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=early_stop_patience, verbose=True, mode="min")
     # early_stop_callback = EarlyStopping(monitor="val_MAE", min_delta=1e-1, patience=100, verbose=True, mode="max")
     checkpoint_callback = ModelCheckpoint(monitor='val_loss', verbose=True)
 
@@ -159,7 +161,7 @@ def main():
             # log_val_interval=1,
             log_gradient_flow=False,
             weight_decay=weight_decay,
-            # reduce_on_plateau_patience=50
+            reduce_on_plateau_patience=reduce_on_plateau_patience
         )
 
     if 1:
@@ -175,7 +177,8 @@ def main():
             # log_val_interval=100,
             log_gradient_flow=False,
             weight_decay=weight_decay,
-            optimizer='adam'
+            optimizer='adam',
+            reduce_on_plateau_patience=reduce_on_plateau_patience
         )
 
     print(f"Number of parameters in network: {net.size() / 1e3:.1f}k")
