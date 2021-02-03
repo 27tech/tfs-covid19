@@ -125,7 +125,7 @@ def main():
     val_dataloader = validation.to_dataloader(train=False, batch_size=batch_size, num_workers=8)
 
     early_stop_patience = 20
-    reduce_on_plateau_patience = early_stop_patience // 2
+    reduce_on_plateau_patience = early_stop_patience // 4
     early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=early_stop_patience, verbose=True, mode="min")
     # early_stop_callback = EarlyStopping(monitor="val_MAE", min_delta=1e-1, patience=100, verbose=True, mode="max")
     checkpoint_callback = ModelCheckpoint(monitor='val_loss', verbose=True)
