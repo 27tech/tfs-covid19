@@ -150,7 +150,7 @@ def main():
             # reduce_on_plateau_patience=4,
         )
         #print(f"Number of parameters in network: {tft.size() / 1e3:.1f}k")
-    if 0:
+    if 1:
         net = NBeats.from_dataset(
             training,
             # stack_types = ['generic'],
@@ -164,7 +164,7 @@ def main():
             reduce_on_plateau_patience=reduce_on_plateau_patience
         )
 
-    if 1:
+    if 0:
         net = DeepAR.from_dataset(
             training,
             # learning_rate=3e-2,
