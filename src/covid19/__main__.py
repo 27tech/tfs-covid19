@@ -57,7 +57,7 @@ def main():
         time_idx="idx",
         target='delta_confirmed',
         group_ids=group_ids,
-        min_encoder_length=max_encoder_length // 2,  # keep encoder length long (as it is in the validation set)
+        # min_encoder_length=max_encoder_length // 2,  # keep encoder length long (as it is in the validation set)
         max_encoder_length=max_encoder_length,
         # min_prediction_length=1,
         max_prediction_length=max_prediction_length,
