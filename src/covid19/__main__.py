@@ -164,7 +164,7 @@ def main():
             training,
             # learning_rate=3e-2,
             learning_rate=learning_rate,
-            hidden_size=8,
+            hidden_size=32,
             dropout=0.1,
             loss=NormalDistributionLoss(),
             # log_interval=1.0,
