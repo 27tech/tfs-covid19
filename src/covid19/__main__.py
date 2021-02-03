@@ -217,7 +217,10 @@ def main():
             #             f'lr={learning_rate:.3f}-bs={batch_size}-wd={weight_decay:.3f}-'
             #             f'win={max_encoder_length}_{max_prediction_length}'
             # ),
-            default_root_dir='checkpoints'
+            default_root_dir='checkpoints',
+            benchmark=True,
+            deterministic=True
+
         )
 
         # fit network
