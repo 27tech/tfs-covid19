@@ -33,7 +33,7 @@ class OpenWorldDataset:
 
 class RnboGovUa:
     _root_url = 'https://api-covid19.rnbo.gov.ua/data'
-    _start_date = datetime(year=2020, month=3, day=15)
+    _start_date = datetime(year=2020, month=3, day=3)
     _series = frozenset(
         [
             # 'confirmed',
@@ -100,7 +100,6 @@ class RnboGovUa:
 
         # for weekday in list(calendar.day_name):
         #     columns[weekday] = deque()
-
 
         for idx, info in enumerate(self.download()):
             file_name, date = info
