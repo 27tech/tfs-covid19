@@ -173,7 +173,7 @@ def main():
             # log_val_interval=100,
             log_gradient_flow=False,
             weight_decay=1e-2,
-            # optimizer='adamw'
+            optimizer='adam'
         )
 
     print(f"Number of parameters in network: {net.size() / 1e3:.1f}k")
