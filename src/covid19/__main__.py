@@ -44,11 +44,12 @@ def main():
     data.to_csv('dataset.csv')
     print(data.head(10))
 
-    # for idx, day_name in enumerate(calendar.day_name):
-    #     data[day_name] = data['date'].apply(
-    #         lambda x: day_name if x.day_name() == day_name else "-").astype('category')
-    #
-    print(data.head(10))
+    for idx, day_name in enumerate(calendar.day_name):
+        data[day_name] = data['date'].apply(
+            lambda x: day_name if x.day_name() == day_name else "-").astype('category')
+
+    # print(data.head(10))
+
     # exit(1)
     training_cutoff = data["idx"].max() - max_prediction_length
     group_ids = ['country', 'region']
@@ -67,8 +68,8 @@ def main():
         # static_reals=groups,
         # time_varying_known_categoricals=["special_days", "month"],
         # variable_groups={"day_name": list(calendar.day_name)},  # group of categorical variables can be treated as one variable
-        # time_varying_known_categoricals=['day_name'],
-        # time_varying_known_reals=list(calendar.day_name),
+        time_varying_known_categoricals=['day_name'],
+        time_varying_known_reals=list(calendar.day_name),
         # time_varying_unknown_categoricals=[],
         time_varying_unknown_reals=[
             # 'existing',
@@ -90,12 +91,12 @@ def main():
             # groups=groups, transformation="softplus"
         # ),  # use softplus and normalize by group
         # add_relative_time_idx=True,
-        # add_target_scales=True,
-        # add_encoder_length=True,
-        # add_relative_time_idx=True,
+        add_target_scales=True,
+        add_encoder_length=True,
+        add_relative_time_idx=True,
           # add_target_scales=True,  # add as feature
           # add_encoder_length=True,
-        allow_missings=True
+        #allow_missings=True
     )
 
 
@@ -110,9 +111,9 @@ def main():
     # for key, value in x.items():
     #     print(f"\t{key} = {value.size()}")
 
-    learning_rate = 0.1
+    learning_rate = 0.01
     gradient_clip_val = 0.01
-    batch_size = 256  # set this between 32 to 128
+    batch_size = 64  # set this between 32 to 128
     weight_decay = 0.001
 
     # create validation set (predict=True) which means to predict the last max_prediction_length points in time
@@ -123,7 +124,7 @@ def main():
     train_dataloader = training.to_dataloader(train=True, batch_size=batch_size, num_workers=8)
     val_dataloader = validation.to_dataloader(train=False, batch_size=batch_size, num_workers=8)
 
-    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=100, verbose=True, mode="min")
+    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=10, verbose=True, mode="min")
     # early_stop_callback = EarlyStopping(monitor="val_MAE", min_delta=1e-1, patience=100, verbose=True, mode="max")
     checkpoint_callback = ModelCheckpoint(monitor='val_loss', verbose=True)
 
