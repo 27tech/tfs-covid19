@@ -86,7 +86,7 @@ def main():
         # ],
         randomize_length=None,
         target_normalizer=GroupNormalizer(
-            groups=group_ids, method="robust"
+            groups=group_ids
         ),
             # groups=groups, transformation="softplus"
         # ),  # use softplus and normalize by group
@@ -111,7 +111,7 @@ def main():
     # for key, value in x.items():
     #     print(f"\t{key} = {value.size()}")
 
-    learning_rate = 1e-2
+    learning_rate = 1e-1
     gradient_clip_val = 0.01
     batch_size = 32  # set this between 32 to 128
     weight_decay = 0.001
