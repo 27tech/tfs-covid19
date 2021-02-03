@@ -204,18 +204,19 @@ def main():
             # limit_train_batches=100.,  # coment in for training, running valiation every 30 batches
             # fast_dev_run=True,  # comment in to check that networkor dataset has no serious bugs
             log_every_n_steps=1000,
+            flush_logs_every_n_steps=1000,
             callbacks=[
                 lr_logger,
                 early_stop_callback,
                 checkpoint_callback
             ],
-            logger=TensorBoardLogger(
-                save_dir='train_log',
-                name=net.__class__.__name__.lower(),
-                version=f'{int(time.time())}-gcv={gradient_clip_val:.2f}-'
-                        f'lr={learning_rate:.3f}-bs={batch_size}-wd={weight_decay:.3f}-'
-                        f'win={max_encoder_length}_{max_prediction_length}'
-            ),
+            # logger=TensorBoardLogger(
+            #     save_dir='train_log',
+            #     name=net.__class__.__name__.lower(),
+            #     version=f'{int(time.time())}-gcv={gradient_clip_val:.2f}-'
+            #             f'lr={learning_rate:.3f}-bs={batch_size}-wd={weight_decay:.3f}-'
+            #             f'win={max_encoder_length}_{max_prediction_length}'
+            # ),
             default_root_dir='checkpoints'
         )
 
