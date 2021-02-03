@@ -36,7 +36,7 @@ def main():
     logger = getLogger(__name__)
     # OpenWorldDataset.download(Path('owid-covid-latest.csv'))
     ds = RnboGovUa('data')
-    data = ds.prepare(metrics={'delta_confirmed'})
+    data = ds.prepare(metrics={'delta_confirmed'}, country_filter=['Ukraine'])
     # data = data.drop(columns=['country'])
     # print(data.head(10))
 
