@@ -1,7 +1,7 @@
 import calendar
 from collections import deque
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Optional, Set
 
 import requests
 from logging import getLogger
@@ -33,7 +33,7 @@ class OpenWorldDataset:
 
 class RnboGovUa:
     _root_url = 'https://api-covid19.rnbo.gov.ua/data'
-    _start_date = datetime(year=2020, month=4, day=1)
+    _start_date = datetime(year=2020, month=2, day=1)
     _series = frozenset(
         [
             # 'confirmed',
@@ -84,7 +84,7 @@ class RnboGovUa:
             yield file_name, date
             current_date += timedelta(days=1)
 
-    def prepare(self, country_filter: List[str]):
+    def prepare(self, metrics: Set[str], country_filter: Optional[List[str]] = None):
 
         columns = {
             'idx': deque(),
@@ -95,8 +95,9 @@ class RnboGovUa:
             # 'weekday': deque(),
             # 'value': deque()
         }
-        for value_name in self._series:
-            columns[value_name] = deque()
+        for metric_name in metrics:
+            assert metric_name in self._series
+            columns[metric_name] = deque()
 
         # for weekday in list(calendar.day_name):
         #     columns[weekday] = deque()
@@ -105,33 +106,41 @@ class RnboGovUa:
             file_name, date = info
             with open(file_name, 'rb') as file:
                 data: Dict[str] = json.load(file)
-
-            for country_name in data.keys():
-                if country_name not in country_filter:
+            # world_data = data['world']
+            # world_data.append(
+            #     {
+            #         'country': 'Ukraine',
+            #         'regions': data['ukraine']
+            #     }
+            # )
+            transformed_data = deque([
+                {
+                    'country': 'Ukraine',
+                    'regions': data['ukraine']
+                }
+            ])
+            for country_data in data['world']:
+                all_region_data = {'region': { 'label': {'en': 'all'}}}
+                all_region_data.update(country_data)
+                transformed_data.append(
+                    {
+                        'country': country_data['country'],
+                        'regions': [all_region_data]
+                    }
+                )
+            # del data
+            for country_data in transformed_data:
+                country_name = country_data['country']
+                if country_filter and country_name not in country_filter:
                     continue
 
-                country_data: List[dict] = data[country_name]
-
-                for region_data in country_data:
-                #     regions_set.add(region_data['id'])
-                #     regions_dict.update(
-                #         {
-                #             region_data['country']: {
-                #                 'label': country_name,
-                #                 'regions': {
-                #                     region_data['id']: region_data['label']['en']
-                #                 }
-                #             }
-                #         }
-                #     )
-
-
+                for region_data in country_data['regions']:
                     columns['idx'].append(idx)
                     columns['date'].append(date)
                     columns['country'].append(country_name)
                     columns['region'].append(region_data['label']['en'])
-                    for sname in self._series:
-                        columns[sname].append(region_data[sname])
+                    for metric_name in metrics:
+                        columns[metric_name].append(region_data[metric_name])
                     # columns['series'].append(sname)
                     # columns['value'].append(region_data[sname])
                         # current_weekday = date.strftime('%A')
@@ -166,9 +175,9 @@ class RnboGovUa:
                 if country_name not in country_filter:
                     continue
 
-                country_data: List[dict] = data[country_name]
+                regions_list: List[dict] = data[country_name]
 
-                for region_data in country_data:
+                for region_data in regions_list:
                     row_data[str(region_data['id'])] = region_data['delta_confirmed']
 
                 for region_id in regions_set:

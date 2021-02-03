@@ -36,21 +36,23 @@ def main():
     logger = getLogger(__name__)
     # OpenWorldDataset.download(Path('owid-covid-latest.csv'))
     ds = RnboGovUa('data')
-    data = ds.prepare(['ukraine'])
+    data = ds.prepare(metrics={'delta_confirmed'})
     # data = data.drop(columns=['country'])
     # print(data.head(10))
-    data.to_csv('dataset.csv')
-    # data = data.groupby(['idx', 'country', 'date']).sum('existing', 'delta_confirmed').reset_index()
-    print(data.head(10))
-    #data['day_of_week'] = data['date'].dt.day_name()
-    for idx, day_name in enumerate(calendar.day_name):
-        data[day_name] = data['date'].apply(
-            lambda x: day_name if x.day_name() == day_name else "-").astype('category')
 
+    data = data.groupby(['idx', 'country', 'date']).sum('delta_confirmed').reset_index()
+    data.to_csv('dataset.csv')
+    print(data.head(10))
+
+    # for idx, day_name in enumerate(calendar.day_name):
+    #     data[day_name] = data['date'].apply(
+    #         lambda x: day_name if x.day_name() == day_name else "-").astype('category')
+    #
     print(data.head(10))
     # exit(1)
     training_cutoff = data["idx"].max() - max_prediction_length
-    group_ids = ['country', 'region']
+    # group_ids = ['country', 'region']
+    group_ids = ['country']
 
     training = TimeSeriesDataSet(
         data[lambda x: x.idx <= training_cutoff],
@@ -93,7 +95,7 @@ def main():
         # add_relative_time_idx=True,
           # add_target_scales=True,  # add as feature
           # add_encoder_length=True,
-        # allow_missings=True
+        allow_missings=True
     )
 
 
