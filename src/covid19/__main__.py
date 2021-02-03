@@ -198,7 +198,7 @@ def main():
         trainer = pl.Trainer(
             # accelerator="dpp",
             max_epochs=1000,
-            gpus=[1] if torch.cuda.is_available() else 0,
+            gpus=0, #[1] if torch.cuda.is_available() else 0,
             weights_summary="top",
             gradient_clip_val=gradient_clip_val,
             # limit_train_batches=100.,  # coment in for training, running valiation every 30 batches
@@ -210,18 +210,18 @@ def main():
                 early_stop_callback,
                 checkpoint_callback
             ],
-            # logger=TensorBoardLogger(
-            #     save_dir='train_log',
-            #     name=net.__class__.__name__.lower(),
-            #     version=f'{int(time.time())}-gcv={gradient_clip_val:.2f}-'
-            #             f'lr={learning_rate:.3f}-bs={batch_size}-wd={weight_decay:.3f}-'
-            #             f'win={max_encoder_length}_{max_prediction_length}'
-            # ),
+            logger=TensorBoardLogger(
+                save_dir='train_log',
+                name=net.__class__.__name__.lower(),
+                version=f'{int(time.time())}-gcv={gradient_clip_val:.2f}-'
+                        f'lr={learning_rate:.3f}-bs={batch_size}-wd={weight_decay:.3f}-'
+                        f'win={max_encoder_length}_{max_prediction_length}'
+            ),
             default_root_dir='checkpoints',
-            benchmark=True,
-            deterministic=True,
-            profiler=True,
-            enable_pl_optimizer=True
+            # benchmark=True,
+            # deterministic=True,
+            # profiler=True,
+            # enable_pl_optimizer=True
         )
 
         # fit network
