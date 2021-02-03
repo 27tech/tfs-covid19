@@ -86,7 +86,7 @@ def main():
         # ],
         randomize_length=None,
         target_normalizer=GroupNormalizer(
-            groups=group_ids # , transformation="softplus"
+            groups=group_ids, transformation="robust"
         ),
             # groups=groups, transformation="softplus"
         # ),  # use softplus and normalize by group
