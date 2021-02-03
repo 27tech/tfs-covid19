@@ -33,7 +33,7 @@ class OpenWorldDataset:
 
 class RnboGovUa:
     _root_url = 'https://api-covid19.rnbo.gov.ua/data'
-    _start_date = datetime(year=2020, month=3, day=3)
+    _start_date = datetime(year=2020, month=4, day=1)
     _series = frozenset(
         [
             # 'confirmed',
