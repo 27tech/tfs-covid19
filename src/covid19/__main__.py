@@ -111,9 +111,9 @@ def main():
     # for key, value in x.items():
     #     print(f"\t{key} = {value.size()}")
 
-    learning_rate = 0.1
+    learning_rate = 1e-2
     gradient_clip_val = 0.01
-    batch_size = 64  # set this between 32 to 128
+    batch_size = 32  # set this between 32 to 128
     weight_decay = 0.001
 
     # create validation set (predict=True) which means to predict the last max_prediction_length points in time
