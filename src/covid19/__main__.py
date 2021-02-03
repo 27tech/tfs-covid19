@@ -31,7 +31,7 @@ from pytorch_forecasting.data.examples import generate_ar_data
 
 def main():
     max_prediction_length = 7
-    max_encoder_length = 28
+    max_encoder_length = 14
 
     logger = getLogger(__name__)
     # OpenWorldDataset.download(Path('owid-covid-latest.csv'))
