@@ -112,7 +112,7 @@ def main():
 
     learning_rate = 0.03
     gradient_clip_val = 0.01
-    batch_size = 128  # set this between 32 to 128
+    batch_size = 256  # set this between 32 to 128
     weight_decay = 0.001
 
     # create validation set (predict=True) which means to predict the last max_prediction_length points in time
@@ -198,7 +198,7 @@ def main():
         trainer = pl.Trainer(
             # accelerator="dpp",
             max_epochs=1000,
-            gpus=0, #[1] if torch.cuda.is_available() else 0,
+            gpus=[0] if torch.cuda.is_available() else None,
             weights_summary="top",
             gradient_clip_val=gradient_clip_val,
             # limit_train_batches=100.,  # coment in for training, running valiation every 30 batches
