@@ -211,7 +211,7 @@ def main():
                 name=net.__class__.__name__.lower(),
                 version=f'{int(time.time())}-gcv={gradient_clip_val:.2f}-'
                         f'lr={learning_rate:.3f}-bs={batch_size}-wd={weight_decay:.3f}-'
-                        f'win={max_encoder_length}_{max_prediction_length}_weekday'
+                        f'win={max_encoder_length}_{max_prediction_length}'
             ),
             default_root_dir='checkpoints'
         )
