@@ -40,7 +40,7 @@ def main():
     # data = data.drop(columns=['country'])
     # print(data.head(10))
 
-    data = data.groupby(['idx', 'country', 'date']).sum('delta_confirmed').reset_index()
+    # data = data.groupby(['idx', 'country', 'date']).sum('delta_confirmed').reset_index()
     data.to_csv('dataset.csv')
     print(data.head(10))
 
@@ -51,8 +51,8 @@ def main():
     print(data.head(10))
     # exit(1)
     training_cutoff = data["idx"].max() - max_prediction_length
-    # group_ids = ['country', 'region']
-    group_ids = ['country']
+    group_ids = ['country', 'region']
+    # group_ids = ['country']
 
     training = TimeSeriesDataSet(
         data[lambda x: x.idx <= training_cutoff],
