@@ -124,7 +124,7 @@ def main():
     train_dataloader = training.to_dataloader(train=True, batch_size=batch_size, num_workers=8)
     val_dataloader = validation.to_dataloader(train=False, batch_size=batch_size, num_workers=8)
 
-    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=10, verbose=True, mode="min")
+    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=50, verbose=True, mode="min")
     # early_stop_callback = EarlyStopping(monitor="val_MAE", min_delta=1e-1, patience=100, verbose=True, mode="max")
     checkpoint_callback = ModelCheckpoint(monitor='val_loss', verbose=True)
 
