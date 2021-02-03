@@ -110,7 +110,7 @@ def main():
     # for key, value in x.items():
     #     print(f"\t{key} = {value.size()}")
 
-    learning_rate = 0.03
+    learning_rate = 0.1
     gradient_clip_val = 0.01
     batch_size = 256  # set this between 32 to 128
     weight_decay = 0.001
