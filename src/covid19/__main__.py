@@ -53,7 +53,7 @@ def main():
     # exit(1)
     training_cutoff = data["idx"].max() - max_prediction_length
     group_ids = ['country', 'region']
-    # group_ids = ['country']
+    group_ids = ['region']
 
     training = TimeSeriesDataSet(
         data[lambda x: x.idx <= training_cutoff],
@@ -64,7 +64,7 @@ def main():
         max_encoder_length=max_encoder_length,
         # min_prediction_length=1,
         max_prediction_length=max_prediction_length,
-        static_categoricals=group_ids,
+        # static_categoricals=group_ids,
         # static_reals=groups,
         # time_varying_known_categoricals=["special_days", "month"],
         # variable_groups={"day_name": list(calendar.day_name)},  # group of categorical variables can be treated as one variable
@@ -86,7 +86,7 @@ def main():
         # ],
         randomize_length=None,
         target_normalizer=GroupNormalizer(
-            groups=group_ids, #, transformation="softplus"
+            groups=group_ids # , transformation="softplus"
         ),
             # groups=groups, transformation="softplus"
         # ),  # use softplus and normalize by group
