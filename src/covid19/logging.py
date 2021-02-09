@@ -20,10 +20,16 @@ LOGGING = {
     },
     'loggers': {
         'covid19': {
-            'propagate': True,
+            'propagate': False,
             'handlers': ['console'],
             'level': LOG_LEVEL,
         },
+        # 'root': {
+        #     'propagate': False,
+        #     'handlers': ['console'],
+        #     'level': LOG_LEVEL,
+        # },
+
     }
 }
 

@@ -1,0 +1,18 @@
+version: "3.7"
+
+
+services:
+  grafana:
+    image: grafana/grafana
+    restart: always
+    ports:
+      - 127.0.0.1:3000:3000/tcp
+    volumes:
+    - $PWD/docker/volumes/grafana/datasources:/etc/grafana/provisioning/datasources
+    - $PWD/docker/volumes/grafana/plugins:/etc/grafana/provisioning/plugins
+    - $PWD/docker/volumes/grafana/datasets:/datasets
+    - $PWD/docker/volumes/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    - $PWD/docker/volumes/grafana/data:/var/lib/grafana
+    environment:
+      # GF_INSTALL_PLUGINS: "grafana-clock-panel,grafana-simple-json-datasource,marcusolsson-csv-datasource"
+      GF_INSTALL_PLUGINS: "marcusolsson-csv-datasource"

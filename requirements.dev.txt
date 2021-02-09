@@ -1,2 +1,4 @@
+jedi==0.17.2
 ipython
 pyarrow==3.0.0
+jupyter

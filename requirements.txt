@@ -2,3 +2,7 @@ torch==1.7.1
 pytorch-forecasting==0.8.3
 pytorch-lightning==1.1.6
 requests~=2.25.1
+tsai==0.2.11
+pmdarima
+pystan
+fbprophet
