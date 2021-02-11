@@ -151,7 +151,11 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=28, horizon
         model = model_class(c_in=dls.vars, c_out=horizon)
         # model = DataParallel(model)
         learn = Learner(
-            dls, model, metrics=[mae, rmse, smape],
+            dls, model, metrics=[
+                mae,
+                rmse,
+                # smape
+            ],
             cbs=[
                 # TensorBoardCallback(projector=False, log_dir='train_log', trace_model=False),
                 CSVLogger(fname=f'{fname}.csv'),
