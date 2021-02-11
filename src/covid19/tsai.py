@@ -172,7 +172,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=28, horizon
         print(learn.loss_func)
 
         # from fastai.distributed import *
-        learn.to_parallel()
+        # learn.to_parallel()
         with learn.parallel_ctx():
             learn.fit_one_cycle(1000, 1e-3)
         learn.recorder.plot_metrics()
