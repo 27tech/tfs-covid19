@@ -149,7 +149,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=28, horizon
         dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[8, 128], batch_tfms=batch_tfms, num_workers=4)
 
         model = model_class(c_in=dls.vars, c_out=horizon)
-        # model = DataParallel(model)
+        model = DataParallel(model)
         learn = Learner(
             dls, model, metrics=[mae, rmse, smape],
             cbs=[
