@@ -4,7 +4,7 @@ from collections import deque
 import torch
 from fastai.callback.tensorboard import TensorBoardCallback
 from fastai.callback.all import SaveModelCallback, CSVLogger, EarlyStoppingCallback
-from fastai.distributed import parallel_ctx
+from fastai.distributed import *
 from fastai.metrics import mae, AccumMetric, accuracy
 # from pmdarima.metrics import smape
 from torch.nn import DataParallel
@@ -149,7 +149,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=28, horizon
         dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[8, 128], batch_tfms=batch_tfms, num_workers=4)
 
         model = model_class(c_in=dls.vars, c_out=horizon)
-        model = DataParallel(model)
+        # model = DataParallel(model)
         learn = Learner(
             dls, model, metrics=[mae, rmse, smape],
             cbs=[
@@ -159,13 +159,13 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=28, horizon
                 EarlyStoppingCallback(min_delta=0, patience=200)
             ]
         )
-        learn.to_parallel()
+        # learn.reset()
         r = learn.lr_find()
         print(r)
         print(learn.loss_func)
 
         # from fastai.distributed import *
-
+        learn.to_parallel()
         with learn.parallel_ctx():
             learn.fit_one_cycle(1000, 1e-3)
         learn.recorder.plot_metrics()
