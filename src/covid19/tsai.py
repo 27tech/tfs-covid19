@@ -154,7 +154,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=28, horizon
             dls, model, metrics=[
                 mae,
                 rmse,
-                # smape
+                smape
             ],
             cbs=[
                 # TensorBoardCallback(projector=False, log_dir='train_log', trace_model=False),
