@@ -164,17 +164,17 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
             ]
         )
         # learn.reset()
-        r = learn.lr_find()
-        print(r)
-        print(learn.loss_func)
 
         # from fastai.distributed import *
         # learn.to_parallel()
-        if torch.cuda.is_available():
-            with learn.parallel_ctx():
-                learn.fit_one_cycle(1000, 1e-3)
-        else:
+        # if torch.cuda.is_available():
+        with learn.parallel_ctx():
+            r = learn.lr_find()
+            print(r)
+            print(learn.loss_func)
             learn.fit_one_cycle(1000, 1e-3)
+        # else:
+        #     learn.fit_one_cycle(1000, 1e-3)
 
         learn.recorder.plot_metrics()
 
