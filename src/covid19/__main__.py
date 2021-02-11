@@ -44,6 +44,9 @@ def main():
     # data = ds.prepare_numpy(x_metrics=RnboGovUa.metrics, y_metrics={'delta_confirmed'}, country_filter=['Ukraine'])
     # array = data.to_numpy()
     data = ds.prepare(metrics=RnboGovUa.metrics, country_filter=['Ukraine'])
+
+    data = data.loc[data['region'] == 'Vinnytsia']
+    print(data.head(5))
     csv_path = os.path.join(config.DATASETS_DIR, f'{ds.__class__.__name__.lower()}.csv')
     # logger.info(f'Save CSV to {csv_path}')
     # data.to_csv(csv_path)
@@ -62,8 +65,8 @@ def main():
 
     # exit(1)
 
-    group_ids = ['country', 'region']
-    # group_ids = ['region']
+    group_ids = ['country_region']
+    group_ids = ['region']
     # group_ids = ['region', 'weekday']
     data['weekday'] = data['date'].dt.day_name()
     # print(data[:,'date', 'time_idx'].head(30))
@@ -81,12 +84,12 @@ def main():
         max_encoder_length=max_encoder_length,
         # min_prediction_length=1,
         max_prediction_length=max_prediction_length,
-        # static_categoricals=group_ids,
+        static_categoricals=group_ids,
         # static_reals=['weekday'],
         # time_varying_known_categoricals=["weekday"],
-        # variable_groups={"day_name": list(calendar.day_name)},  # group of categorical variables can be treated as one variable
+        # variable_groups={'region'},  # group of categorical variables can be treated as one variable
         # time_varying_known_categoricals=['day_name'],
-        # time_varying_known_reals=['existing'],
+        time_varying_known_reals=['confirmed'],
         # time_varying_unknown_categoricals=["weekday"],
         time_varying_unknown_reals=[
             # 'existing',
@@ -107,13 +110,13 @@ def main():
         ),
         # groups=groups, transformation="softplus"
         # ),  # use softplus and normalize by group
-        # add_relative_time_idx=True,
+        add_relative_time_idx=True,
         # add_target_scales=True,
         # add_encoder_length=True,
         # add_relative_time_idx=True,
         # add_target_scales=True,  # add as feature
         # add_encoder_length=True,
-        # allow_missings=True
+        allow_missings=True
     )
 
     # # convert the dataset to a dataloader
@@ -129,7 +132,7 @@ def main():
 
     learning_rate = 1e-1
     gradient_clip_val = 0.1
-    batch_size = 8  # set this between 32 to 128
+    batch_size = 64  # set this between 32 to 128
     weight_decay = 0.001
 
     # create validation set (predict=True) which means to predict the last max_prediction_length points in time
@@ -137,12 +140,13 @@ def main():
     validation = TimeSeriesDataSet.from_dataset(training, data, predict=True, stop_randomization=True)
     print(len(training))
     # create dataloaders for model
-    train_dataloader = training.to_dataloader(train=True, batch_size=batch_size, num_workers=2)
-    val_dataloader = validation.to_dataloader(train=False, batch_size=batch_size, num_workers=2)
-
-    early_stop_patience = 5
+    train_dataloader = training.to_dataloader(train=True, batch_size=batch_size, num_workers=0)
+    val_dataloader = validation.to_dataloader(train=False, batch_size=batch_size, num_workers=0)
+    # for b in iter(val_dataloader):
+    #     print(b.shape)
+    early_stop_patience = 10
     reduce_on_plateau_patience = early_stop_patience // 4
-    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=early_stop_patience, verbose=True,
+    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-5, patience=early_stop_patience, verbose=True,
                                         mode="min")
     # early_stop_callback = EarlyStopping(monitor="val_MAE", min_delta=1e-1, patience=100, verbose=True, mode="max")
     checkpoint_callback = ModelCheckpoint(monitor='val_loss', verbose=True)
@@ -152,13 +156,13 @@ def main():
     # configure network and trainer
     pl.seed_everything(42)
 
-    if 0:
+    if 1:
         net = TemporalFusionTransformer.from_dataset(
             training,
-            # learning_rate=learning_rate,
+            learning_rate=learning_rate,
             # hidden_size=16,
-            attention_head_size=1,
-            dropout=0.1,
+            # attention_head_size=1,
+            # dropout=0.1,
             # hidden_continuous_size=8,
             # output_size=7,  # 7 quantiles by default
             # loss=QuantileLoss(),
@@ -167,19 +171,20 @@ def main():
             weight_decay=weight_decay,
         )
         # print(f"Number of parameters in network: {tft.size() / 1e3:.1f}k")
-    if 1:
+    if 0:
         net = NBeats.from_dataset(
             training,
             # stack_types = ['generic', 'trend', ],
-            # num_blocks=[3, 3],
-            # num_block_layers=[5, 5],
-            learning_rate=1.0e-4,
+            # num_blocks=[4, 4],
+            # num_block_layers=[4, 4],
+            learning_rate=1.0e-3,
             # gradient_clip_val=gradient_clip_val,
             # learning_rate=0.003981071705534969,
             # learning_rate=7.585775750291837e-08,
             # log_interval=10,
             # log_val_interval=1,
             # log_gradient_flow=False,
+            # loss=SMAPE(),
             weight_decay=weight_decay,
             reduce_on_plateau_patience=reduce_on_plateau_patience
         )
@@ -221,7 +226,7 @@ def main():
     if 1:
         trainer = pl.Trainer(
             # accelerator="dpp",
-            max_epochs=1000,
+            max_epochs=100,
             gpus=[0] if torch.cuda.is_available() else None,
             weights_summary="top",
             gradient_clip_val=gradient_clip_val,
@@ -316,6 +321,12 @@ def main():
     # plot = net.plot_prediction(x=x, out=dict(prediction=raw), idx=0)
     # plot.show()
 
+    smape = SMAPE()
+    smape.update(actuals, output)
+    print(f'SMAPE: {smape.compute()}')
+    print(f"MAE: {(actuals - output).abs().mean()}")
+
+
     target_name = f'predicted_{validation.target}'
     columns = {
         validation.time_idx: deque(),
@@ -339,7 +350,6 @@ def main():
     merged.to_csv(csv_path)
     # print([index.loc[idx, ['region', 'idx']]['region'] for idx in range(output.size(0))])
     # predictions = net.predict(val_dataloader)
-    print(f"Mean absolute error of model: {(actuals - output).abs().mean()}")
     # print(f'SMAPE: {SMAPE().loss(actuals, output)}')
 
     # actuals = torch.cat([y for x, (y, weight) in iter(val_dataloader)])
@@ -426,9 +436,9 @@ def predict(model_class, checkpoint_path: Optional[str]):
     # print(f"Mean absolute error of model: {(actuals - predictions).abs().mean()}")
 
 
-from .tsai import test
+from . import tsai
 
 if __name__ == "__main__":
     # predict(model_class=DeepAR, checkpoint_path=None)
-    test()
+    tsai.test(fit=True)
     # main()

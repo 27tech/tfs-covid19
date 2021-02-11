@@ -235,5 +235,5 @@ class RnboGovUa:
         df['country_cat'] = df.country.cat.codes
         df['region_cat'] = df.region.cat.codes
         logger.info(f"Dataset range: {df['date'].min()} - {df['date'].max()}")
-        df = df.set_index('idx')
+        # df = df.set_index('idx')
         return df

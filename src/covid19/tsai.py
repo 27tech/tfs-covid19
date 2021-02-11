@@ -1,18 +1,28 @@
-from fastai.metrics import mae, AccumMetric
+import random
+from collections import deque
+
+import torch
+from fastai.callback.tensorboard import TensorBoardCallback
+from fastai.callback.all import SaveModelCallback, CSVLogger, EarlyStoppingCallback
+from fastai.metrics import mae, AccumMetric, accuracy
 # from pmdarima.metrics import smape
 from tsai.data.core import get_ts_dls, TSDatasets, TSDataLoaders, ToNumpyTensor, ToFloat, flatten_check, skm_to_fastai
 from tsai.data.external import check_data
-from tsai.data.preparation import SlidingWindow
+from tsai.data.preparation import SlidingWindow, SlidingWindowPanel, df2xy
 from tsai.data.preprocessing import TSStandardize
 from tsai.data.validation import get_splits, rmse
 from tsai.learner import ts_learner, Learner
-from tsai.models.InceptionTime import InceptionTime
-from tsai.models.InceptionTimePlus import InceptionTimePlus
+import numpy as np
+import calendar
+from tsai.models.InceptionTimePlus import InceptionTimePlus, InceptionTimePlus17x17, InceptionTimePlus47x47, \
+    InceptionTimePlus62x62
 from tsai.models.TSTPlus import TSTPlus
-
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
+from matplotlib import pyplot as plt
 from .datasets import RnboGovUa
-
+import pandas as pd
 from pytorch_forecasting.metrics import SMAPE
+
 
 # s = SMAPE()
 
@@ -21,48 +31,217 @@ def skm_smape(y_pred, target):
     loss = 2 * (y_pred - target).abs() / (y_pred.abs() + target.abs() + 1e-8)
     return loss.mean()
 
+
 smape = AccumMetric(skm_smape)
 
-def test():
-    window_length = 21
-    horizon = 7
-    df = RnboGovUa().prepare(metrics=RnboGovUa.metrics, country_filter=['Ukraine'])
-    print(df.head(5))
+
+def rescale_columns(df_columns, scaler):
+    X = df_columns.values.reshape(-1, 1)
+    scaler.fit(X)
+    X = scaler.transform(X)
+    return X.reshape(-1)
+
+
+def set_seeds():
+    random.seed(42)
+    np.random.seed(12345)
+    torch.manual_seed(1234)
+    torch.set_deterministic(True)
+    if torch.cuda.is_available():
+        torch.backends.cudnn.benchmark = False
+
+
+def test(fit=True, model_class=InceptionTimePlus17x17, window_length=28, horizon=7):
+    df = RnboGovUa().prepare(metrics={'confirmed', 'existing', 'delta_confirmed'}, country_filter=['Ukraine'])
+    # df = df.loc[df['region'] == 'Dnipropetrovska']
+    # df['delta_confirmed_norm'] = rescale_columns(df.delta_confirmed, scaler=Normalizer())
+    df['confirmed_std'] = rescale_columns(df.confirmed, scaler=StandardScaler())
+    df['confirmed_nx'] = rescale_columns(df.confirmed, scaler=MinMaxScaler())
+    df['delta_confirmed_nx'] = rescale_columns(df.delta_confirmed, scaler=MinMaxScaler())
+    df['delta_confirmed_std'] = rescale_columns(df.delta_confirmed, scaler=StandardScaler())
+    df['existing_std'] = rescale_columns(df.existing, scaler=StandardScaler())
+
+    # df['confirmed_yst'] = df.confirmed.shift()
+    # df['confirmed_diff'] = df['confirmed'] - df['confirmed_yst']
+    # regions_count = len(df.region.unique())
+    window_length = window_length
+
+    stride = 1
+
+    # df = df.dropna()
+    #
+    # existing_scaler = StandardScaler()
+    # existing = df.existing.values.reshape(-1, 1)
+    # existing_scaler.fit(existing)
+    # df['existing_std'] = existing_scaler.transform(existing).reshape(-1)
+    # df['weekday'] = df['date'].dt.weekday
+
+    for idx, day_name in enumerate(calendar.day_name):
+        df[day_name] = df['date'].apply(
+            lambda x: 1. if x.day_name() == day_name else .0)
+
+    #
+    print(df.head(15))
     print(f'Dataframe: {df.shape}')
-    wl = SlidingWindow(
-        window_length,
-        seq_first=True, get_x=['region_cat', 'confirmed', 'suspicion'],
-        get_y=['delta_confirmed'],
-        horizon=horizon)
 
+    # X_3d, y_3d = df2xy(
+    #     df,
+    #     feat_col='country_region',
+    #     data_cols=['suspicion', 'confirmed'],
+    #     target_col=['country_region','delta_confirmed'], to3d=True)
+    #
+    # print(f'X_3d.shape: {X_3d.shape}')
+    # print(f'y_3d.shape: {y_3d.shape}')
 
+    training_cutoff = df["idx"].max() - horizon
+    train_data = df[lambda x: x.idx <= training_cutoff]
 
-    X, y = wl(df)
+    vars = ['confirmed_std', 'existing_std', 'delta_confirmed_std', 'region_cat'] + list(calendar.day_name)
+    vars_dict = {k: v for v, k in enumerate(vars)}
+    target = ['confirmed_nx']
 
-    y = y.astype('float32')
-    from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
-    # scaler = MinMaxScaler()
-    # scaler = StandardScaler()
-    scaler = Normalizer()
-    scaler.fit(y)
-    y = scaler.transform(y)
+    # print(dsets[0])
+    # b = dls.one_batch()
+    # dls.show_batch()
 
-    print(f'X: {X.shape}')
-    print(f'y: {y.shape}')
-
-    splits = get_splits(y, valid_size=.2, stratify=False, random_state=23, shuffle=True)
-    check_data(X, y, splits)
-    tfms = None
-    batch_tfms = TSStandardize(by_sample=True, by_var=True)
-    # tfms  = [None, [ToFloat()]]
-    dsets = TSDatasets(X, y, tfms=tfms, splits=splits)
-    dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=64, batch_tfms=batch_tfms,num_workers=0)
-    print(dsets[0])
+    # plt.show()
     # dls = get_ts_dls(X, y, splits=splits, tfms=tfms, batch_tfms=batch_tfms, bs=)
-    print(f'dls.c: {dls.c}')
-    learn = Learner(dls, InceptionTimePlus(c_in=dls.vars, c_out=horizon), metrics=[mae, rmse, smape])
-    # learn = ts_learner(dls, InceptionTime, metrics=[mae, rmse], verbose=True)
-    learn.fit_one_cycle(50, 1e-3)
+    model_name = model_class.__name__
+    fname = f'{model_name}_window={window_length}_horizon={horizon}'
 
+    if fit:
+        wl = SlidingWindow(
+            window_length,
+            seq_first=True,
+            get_x=vars,
+            get_y=target,
+            stride=stride,
+            horizon=horizon)
 
+        time_steps = len(train_data.idx.unique())
+        X_train = []
+        y_train = []
+        for region in train_data.region.unique():
+            region_data = train_data.loc[train_data['region'] == region]
+            assert len(region_data) == time_steps
+            X_region, y_region = wl(region_data)
+            X_train.append(X_region)
+            y_train.append(y_region.astype('float32'))
 
+        y_train = np.vstack(y_train)
+        X_train = np.vstack(X_train)
+
+        # X_train, y_train = wl(train_data)
+        # y_train = y_train.astype('float32')
+        splits = get_splits(y_train, valid_size=.2, stratify=False, random_state=23, shuffle=True)
+        check_data(X_train, y_train, splits)
+        tfms = None
+        # batch_tfms = TSStandardize(by_sample=True, by_var=True)
+        batch_tfms = None
+        # tfms  = [None, [ToFloat(), TSForecasting]]
+        dsets = TSDatasets(X_train, y_train, tfms=tfms, splits=splits)
+        # SlidingWindowPanel
+        dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[8, 128], batch_tfms=batch_tfms, num_workers=0)
+
+        model = model_class(c_in=dls.vars, c_out=horizon)
+
+        learn = Learner(
+            dls, model, metrics=[mae, rmse, smape],
+            cbs=[
+                # TensorBoardCallback(projector=False, log_dir='train_log', trace_model=False),
+                CSVLogger(fname=f'{fname}.csv'),
+                SaveModelCallback(fname=fname),
+                EarlyStoppingCallback(min_delta=0, patience=200)
+            ]
+        )
+        r = learn.lr_find()
+        print(r)
+        print(learn.loss_func)
+        learn.fit_one_cycle(1000, 1e-3)
+        learn.recorder.plot_metrics()
+
+    testing_cutoff = df.idx.max() - window_length - horizon
+    test_data = df[lambda x: x.idx > testing_cutoff]
+
+    # wl = SlidingWindow(
+    #     window_length,
+    #     seq_first=True,
+    #     get_x=vars,
+    #     get_y=target,
+    #     stride=None,
+    #     horizon=horizon)
+    # x_test, y_true = wl(test_data)
+    # print(true_data)
+
+    time_steps = len(test_data.idx.unique())
+    X_test = []
+    y_true = []
+    for region in test_data.region.unique():
+        region_data = test_data.loc[test_data['region'] == region]
+        assert len(region_data) == time_steps
+        region_history_data = region_data[:window_length]
+        region_true_data = region_data[window_length:]
+        # history_data = test_data[:window_length]
+        # print(history_data)
+        # true_data = test_data[window_length:]
+        #
+        # region_history_data = history_data.loc[history_data['region'] == region]
+        # region_true_data = true_data.loc[true_data.region == region]
+
+        X_region = np.asarray([region_history_data[vars].values.transpose(1, 0)])
+        y_region = np.asarray([region_true_data[target].values.reshape(-1)])
+
+        assert X_region.shape[2] == window_length
+        assert y_region.shape[1] == horizon
+        X_test.append(X_region)
+        y_true.append(y_region.astype('float32'))
+
+    y_true = np.vstack(y_true)
+    X_test = np.vstack(X_test)
+
+    check_data(X_test, y_true)
+
+    split = list(range(len(y_true)))
+
+    dls = get_ts_dls(X=X_test, y=y_true, splits=(split, split))
+
+    model = model_class(c_in=len(vars), c_out=horizon)
+
+    learn = Learner(
+        dls, model, metrics=[mae, rmse, smape])
+    learn.load(fname, with_opt=False)
+
+    inputs, valid_preds, valid_targets = learn.get_preds(ds_idx=1, with_input=True)
+    columns = {
+        'region': deque(),
+        'mae': deque(),
+    }
+
+    for i in range(horizon):
+        columns[f'Day_{i + window_length + 1} AE'] = deque()
+
+    for sample_idx in range(valid_preds.shape[0]):
+        input_ = inputs[sample_idx]
+        region_cat = input_[vars_dict['region_cat']][0].long()
+        region = df.region.cat.categories[region_cat]
+        columns['region'].append(region)
+        columns['mae'].append((valid_targets[sample_idx] - valid_preds[sample_idx]).abs().mean())
+
+        for day in range(valid_preds.shape[1]):
+            predicted = valid_preds[sample_idx][day]
+            target = valid_targets[sample_idx][day]
+            columns[f'Day_{day + window_length + 1} AE'].append((predicted - target).abs())
+
+    test_df = pd.DataFrame.from_dict(columns)
+    print(test_df)
+    test_df.to_csv(f'{fname}_test.csv')
+    # metric_smape = SMAPE()
+    # metric_smape.update(predicted, target)
+    # print(f'SMAPE: {metric_smape.compute()}')
+    # print(f"MAE: {(predicted - target).abs().mean()}")
+
+    # learn.show_results(ds_idx=1)
+    # valid_preds, valid_targets = learn.get_preds(ds_idx=1)
+
+    # print(valid_preds.flatten().data)
+    # print(valid_targets.data)
