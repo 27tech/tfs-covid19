@@ -4,8 +4,10 @@ from collections import deque
 import torch
 from fastai.callback.tensorboard import TensorBoardCallback
 from fastai.callback.all import SaveModelCallback, CSVLogger, EarlyStoppingCallback
+from fastai.distributed import parallel_ctx
 from fastai.metrics import mae, AccumMetric, accuracy
 # from pmdarima.metrics import smape
+from torch.nn import DataParallel
 from tsai.data.core import get_ts_dls, TSDatasets, TSDataLoaders, ToNumpyTensor, ToFloat, flatten_check, skm_to_fastai
 from tsai.data.external import check_data
 from tsai.data.preparation import SlidingWindow, SlidingWindowPanel, df2xy
@@ -49,6 +51,9 @@ def set_seeds():
     torch.set_deterministic(True)
     if torch.cuda.is_available():
         torch.backends.cudnn.benchmark = False
+
+
+set_seeds()
 
 
 def test(fit=True, model_class=InceptionTimePlus17x17, window_length=28, horizon=7):
@@ -141,10 +146,10 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=28, horizon
         # tfms  = [None, [ToFloat(), TSForecasting]]
         dsets = TSDatasets(X_train, y_train, tfms=tfms, splits=splits)
         # SlidingWindowPanel
-        dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[8, 128], batch_tfms=batch_tfms, num_workers=0)
+        dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[8, 128], batch_tfms=batch_tfms, num_workers=4)
 
         model = model_class(c_in=dls.vars, c_out=horizon)
-
+        # model = DataParallel(model)
         learn = Learner(
             dls, model, metrics=[mae, rmse, smape],
             cbs=[
@@ -154,10 +159,15 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=28, horizon
                 EarlyStoppingCallback(min_delta=0, patience=200)
             ]
         )
+        learn.to_parallel()
         r = learn.lr_find()
         print(r)
         print(learn.loss_func)
-        learn.fit_one_cycle(1000, 1e-3)
+
+        # from fastai.distributed import *
+
+        with learn.parallel_ctx():
+            learn.fit_one_cycle(1000, 1e-3)
         learn.recorder.plot_metrics()
 
     testing_cutoff = df.idx.max() - window_length - horizon
