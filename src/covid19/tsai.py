@@ -56,7 +56,7 @@ def set_seeds():
 set_seeds()
 
 
-def test(fit=True, model_class=InceptionTimePlus17x17, window_length=28, horizon=7):
+def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon=7):
     df = RnboGovUa().prepare(metrics={'confirmed', 'existing', 'delta_confirmed'}, country_filter=['Ukraine'])
     # df = df.loc[df['region'] == 'Dnipropetrovska']
     # df['delta_confirmed_norm'] = rescale_columns(df.delta_confirmed, scaler=Normalizer())
@@ -138,7 +138,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=28, horizon
 
         # X_train, y_train = wl(train_data)
         # y_train = y_train.astype('float32')
-        splits = get_splits(y_train, valid_size=.2, stratify=False, random_state=23, shuffle=True)
+        splits = get_splits(y_train, valid_size=.1, stratify=False, random_state=23, shuffle=True)
         check_data(X_train, y_train, splits)
         tfms = None
         # batch_tfms = TSStandardize(by_sample=True, by_var=True)
@@ -146,7 +146,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=28, horizon
         # tfms  = [None, [ToFloat(), TSForecasting]]
         dsets = TSDatasets(X_train, y_train, tfms=tfms, splits=splits)
         # SlidingWindowPanel
-        dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[32, 128], batch_tfms=batch_tfms, num_workers=4, pin_memory=True)
+        dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[128, 128], batch_tfms=batch_tfms, num_workers=4, pin_memory=True)
 
         model = model_class(c_in=dls.vars, c_out=horizon)
         # model = DataParallel(model)
