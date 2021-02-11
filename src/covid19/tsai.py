@@ -146,12 +146,9 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=28, horizon
         # tfms  = [None, [ToFloat(), TSForecasting]]
         dsets = TSDatasets(X_train, y_train, tfms=tfms, splits=splits)
         # SlidingWindowPanel
-        dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[8, 128], batch_tfms=batch_tfms, num_workers=4)
+        dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[32, 128], batch_tfms=batch_tfms, num_workers=4, pin_memory=True)
 
         model = model_class(c_in=dls.vars, c_out=horizon)
-        # if torch.cuda.is_available():
-        #     model.to('cuda')
-
         # model = DataParallel(model)
         learn = Learner(
             dls, model, metrics=[
@@ -173,8 +170,12 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=28, horizon
 
         # from fastai.distributed import *
         # learn.to_parallel()
-        with learn.parallel_ctx():
+        if torch.cuda.is_available():
+            with learn.parallel_ctx():
+                learn.fit_one_cycle(1000, 1e-3)
+        else:
             learn.fit_one_cycle(1000, 1e-3)
+
         learn.recorder.plot_metrics()
 
     testing_cutoff = df.idx.max() - window_length - horizon
