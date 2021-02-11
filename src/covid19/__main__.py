@@ -1,37 +1,24 @@
-import calendar
-from typing import Optional
-from collections import deque
-import torch
-from pytorch_forecasting.data.encoders import MultiNormalizer, TorchNormalizer, EncoderNormalizer
-from pytorch_forecasting.metrics import NormalDistributionLoss, QuantileLoss
-from pytorch_forecasting.models.temporal_fusion_transformer.tuning import optimize_hyperparameters
-import time
-from .datasets import OpenWorldDataset, RnboGovUa
-from pathlib import Path
-from pytorch_lightning.loggers import TensorBoardLogger
-# from .logging import configure_logging
-from pytorch_forecasting.data.timeseries import TimeSeriesDataSet
-import pytorch_lightning as pl
-
-from pytorch_lightning.callbacks import EarlyStopping, LearningRateMonitor
-from pytorch_forecasting.metrics import SMAPE
-
-from pytorch_forecasting import TimeSeriesDataSet, TemporalFusionTransformer, GroupNormalizer, Baseline, DeepAR
-from pytorch_forecasting.models import TemporalFusionTransformer, NBeats
-from pytorch_lightning.callbacks import ModelCheckpoint
-from logging import getLogger
-from . import config
-import os
 import datetime
+import os
+import time
+from collections import deque
+from logging import getLogger
+
 import pandas as pd
-from pytorch_forecasting.data.examples import generate_ar_data
+import pytorch_lightning as pl
+import torch
+from pytorch_forecasting import TimeSeriesDataSet, GroupNormalizer, DeepAR
+from pytorch_forecasting.metrics import NormalDistributionLoss
+from pytorch_forecasting.metrics import SMAPE
+from pytorch_forecasting.models import TemporalFusionTransformer, NBeats
+from pytorch_lightning.callbacks import EarlyStopping, LearningRateMonitor
+from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers import TensorBoardLogger
 
+from . import config
+from . import tsai
+from .datasets import RnboGovUa
 
-# datasets = generate_ar_data(seasonality=10.0, timesteps=400, n_series=2)
-#
-# datasets["date"] = pd.Timestamp("2020-01-01") + pd.to_timedelta(datasets.time_idx, "D")
-# print(datasets.head(20))
-# exit(1)
 
 def main():
     max_prediction_length = 7
@@ -357,86 +344,6 @@ def main():
     # print((actuals - baseline_predictions).abs().mean().item())
 
     # ds.download()
-
-
-def get_predict_dataset(max_encoder_length: int = 28, max_prediction_length: int = 7):
-    rnbo = RnboGovUa()
-    data = rnbo.prepare(metrics=rnbo.metrics, country_filter=['Ukraine'])
-
-    training_cutoff = data["idx"].max() - max_encoder_length
-
-    group_ids = ['country', 'region']
-    group_ids = ['region']
-
-    dataset = TimeSeriesDataSet(
-        data[lambda x: x.idx <= training_cutoff],
-        time_idx="idx",
-        target='delta_confirmed',
-        group_ids=group_ids,
-        # min_encoder_length=max_encoder_length // 2,  # keep encoder length long (as it is in the validation set)
-        max_encoder_length=max_encoder_length,
-        # min_prediction_length=1,
-        max_prediction_length=max_prediction_length,
-        static_categoricals=group_ids,
-        # static_reals=groups,
-        # time_varying_known_categoricals=["special_days", "month"],
-        # variable_groups={"day_name": list(calendar.day_name)},  # group of categorical variables can be treated as one variable
-        # time_varying_known_categoricals=['day_name'],
-        # time_varying_known_reals=list(calendar.day_name),
-        # time_varying_unknown_categoricals=[],
-        time_varying_unknown_reals=[
-            # 'existing',
-            'delta_confirmed'
-        ],
-        # [
-        #     "volume",
-        #     "log_volume",
-        #     "industry_volume",
-        #     "soda_volume",
-        #     "avg_max_temp",
-        #     "avg_volume_by_agency",
-        #     "avg_volume_by_sku",
-        # ],
-        randomize_length=None,
-        target_normalizer=GroupNormalizer(
-            groups=group_ids
-        ),
-        # groups=groups, transformation="softplus"
-        # ),  # use softplus and normalize by group
-        # add_relative_time_idx=True,
-        add_target_scales=True,
-        # add_encoder_length=True,
-        # add_relative_time_idx=True,
-        # add_target_scales=True,  # add as feature
-        # add_encoder_length=True,
-        # allow_missings=True
-    )
-
-    # assert len(dataset) == max_encoder_length
-    return dataset, data
-
-
-def predict(model_class, checkpoint_path: Optional[str]):
-    if checkpoint_path is None:
-        checkpoint_path = os.path.join(config.CHECKPOINTS_DIR, f'{model_class.__name__.lower()}.ckpt')
-
-    # create validation set (predict=True) which means to predict the last max_prediction_length points in time
-    # for each series
-    training, data = get_predict_dataset()
-    validation = TimeSeriesDataSet.from_dataset(training, data, predict=True, stop_randomization=True)
-    print(len(validation))
-    # create dataloaders for model
-    # train_dataloader = training.to_dataloader(train=True, batch_size=batch_size, num_workers=8)
-    dataloader = validation.to_dataloader(train=False, batch_size=1, num_workers=0)
-
-    net = model_class.load_from_checkpoint(checkpoint_path)
-    # actuals = torch.cat([y for x, (y, weight) in iter(dataloader)])
-    predictions = net.predict(dataloader)
-    print(predictions)
-    # print(f"Mean absolute error of model: {(actuals - predictions).abs().mean()}")
-
-
-from . import tsai
 
 if __name__ == "__main__":
     # predict(model_class=DeepAR, checkpoint_path=None)

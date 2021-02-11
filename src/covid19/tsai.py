@@ -1,13 +1,12 @@
 import random
 from collections import deque
+from datetime import timedelta
 
 import torch
-from fastai.callback.tensorboard import TensorBoardCallback
 from fastai.callback.all import SaveModelCallback, CSVLogger, EarlyStoppingCallback
 from fastai.distributed import *
 from fastai.metrics import mae, AccumMetric, accuracy
 # from pmdarima.metrics import smape
-from torch.nn import DataParallel
 from tsai.data.core import get_ts_dls, TSDatasets, TSDataLoaders, ToNumpyTensor, ToFloat, flatten_check, skm_to_fastai
 from tsai.data.external import check_data
 from tsai.data.preparation import SlidingWindow, SlidingWindowPanel, df2xy
@@ -23,9 +22,11 @@ from tsai.models.TST import TST
 from tsai.models.ResNet import ResNet
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
 from matplotlib import pyplot as plt
+
+from . import config
 from .datasets import RnboGovUa
 import pandas as pd
-from pytorch_forecasting.metrics import SMAPE
+import os
 
 
 # s = SMAPE()
@@ -59,17 +60,21 @@ set_seeds()
 
 
 def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon=7):
-    df = RnboGovUa().prepare(
+    ds = RnboGovUa()
+    data = RnboGovUa().prepare(
         metrics=RnboGovUa.metrics,
         country_filter=['Ukraine']
     )
+    df = data.copy()
     # df = df.loc[df['region'] == 'Dnipropetrovska']
     # df['delta_confirmed_norm'] = rescale_columns(df.delta_confirmed, scaler=Normalizer())
     df['confirmed_std'] = rescale_columns(df.confirmed, scaler=StandardScaler())
     scalers_dict = {
-        'confirmed_nx': MinMaxScaler()
+        'confirmed_nx': MinMaxScaler(),
+        'existing_nx': MinMaxScaler()
     }
     df['confirmed_nx'] = rescale_columns(df.confirmed, scaler=scalers_dict['confirmed_nx'])
+    df['existing_nx'] = rescale_columns(df.existing, scaler=scalers_dict['existing_nx'])
     df['delta_confirmed_nx'] = rescale_columns(df.delta_confirmed, scaler=MinMaxScaler())
     df['delta_confirmed_std'] = rescale_columns(df.delta_confirmed, scaler=StandardScaler())
     df['existing_std'] = rescale_columns(df.existing, scaler=StandardScaler())
@@ -85,7 +90,6 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
     window_length = window_length
 
     stride = 1
-
 
     for idx, day_name in enumerate(calendar.day_name):
         df[day_name] = df['date'].apply(
@@ -110,10 +114,10 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
     columns_idx = {i: n for i, n in enumerate(df.columns.values)}
 
     vars = ['confirmed_std', 'existing_std', 'delta_confirmed_std', 'region_cat'] + list(calendar.day_name)
-    vars = [ columns_idx[k] for k in sorted(columns_idx.keys()) if columns_idx[k] in vars ]
+    vars = [columns_idx[k] for k in sorted(columns_idx.keys()) if columns_idx[k] in vars]
 
     vars_dict = {k: v for v, k in enumerate(vars)}
-    target = ['confirmed_nx']
+    target = ['existing_nx'] # ['confirmed_nx']
 
     # print(dsets[0])
     # b = dls.one_batch()
@@ -171,8 +175,10 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
         # tfms  = [None, [ToFloat(), TSForecasting]]
         dsets = TSDatasets(X_train, y_train, tfms=tfms, splits=splits)
         # SlidingWindowPanel
-        dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[128, 128], batch_tfms=batch_tfms, num_workers=4, pin_memory=True)
-        model = model_class(c_in=dls.vars, c_out=horizon) #, seq_len=window_length)
+        dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[128, 128], batch_tfms=batch_tfms, num_workers=4,
+                                       pin_memory=True)
+
+        model = model_class(c_in=dls.vars, c_out=horizon)  # , seq_len=window_length)
         # model = DataParallel(model)
         learn = Learner(
             dls, model, metrics=[
@@ -196,7 +202,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
             r = learn.lr_find()
             print(r)
             print(learn.loss_func)
-            learn.fit_one_cycle(1000, 1e-3)
+            learn.fit_one_cycle(10000, 1e-3)
         # else:
         #     learn.fit_one_cycle(1000, 1e-3)
 
@@ -254,13 +260,26 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
     learn.load(fname, with_opt=False)
 
     inputs, valid_preds, valid_targets = learn.get_preds(ds_idx=1, with_input=True)
+
+    last_date = test_data['date'].max() - timedelta(days=horizon)
+
     columns = {
         'region': deque(),
-        'mae': deque(),
+        'mae': deque()
+    }
+
+    target_name = f'predicted_{target[0]}'
+
+    columns_prediction = {
+        'date': deque(),
+        'region': deque(),
+        target_name: deque(),
     }
 
     for i in range(horizon):
         columns[f'Day_{i + window_length + 1} AE'] = deque()
+
+    inverse_predicts = scalers_dict[target[0]].inverse_transform(valid_preds)
 
     for sample_idx in range(valid_preds.shape[0]):
         input_ = inputs[sample_idx]
@@ -268,23 +287,23 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
         region = df.region.cat.categories[region_cat]
         columns['region'].append(region)
         columns['mae'].append((valid_targets[sample_idx] - valid_preds[sample_idx]).abs().mean())
-        # inverse_predicted = scalers_dict[target].inverse_transform(valid_preds[sample_idx])
         for day in range(valid_preds.shape[1]):
+            row_date = last_date + timedelta(days=day + 1)
             predicted = valid_preds[sample_idx][day]
             target = valid_targets[sample_idx][day]
             columns[f'Day_{day + window_length + 1} AE'].append((predicted - target).abs())
+
+            columns_prediction['date'].append(row_date)
+            columns_prediction['region'].append(region)
+            columns_prediction[target_name].append(inverse_predicts[sample_idx][day])
 
     test_df = pd.DataFrame.from_dict(columns)
     print(test_df)
     print(test_df.describe())
     test_df.to_csv(f'{fname}_test.csv')
-    # metric_smape = SMAPE()
-    # metric_smape.update(predicted, target)
-    # print(f'SMAPE: {metric_smape.compute()}')
-    # print(f"MAE: {(predicted - target).abs().mean()}")
 
-    # learn.show_results(ds_idx=1)
-    # valid_preds, valid_targets = learn.get_preds(ds_idx=1)
-
-    # print(valid_preds.flatten().data)
-    # print(valid_targets.data)
+    prediction_df = pd.DataFrame.from_dict(columns_prediction)
+    print(prediction_df)
+    merged = data.merge(prediction_df, on=['date', 'region'], how='left')
+    csv_path = os.path.join(config.DATASETS_DIR, f'{ds.__class__.__name__.lower()}.csv')
+    merged.to_csv(csv_path)
