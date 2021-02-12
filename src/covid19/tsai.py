@@ -191,7 +191,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
             r = learn.lr_find()
             print(r)
             print(learn.loss_func)
-            learn.fit_one_cycle(100, 1e-3)
+            learn.fit_one_cycle(10000, 1e-3)
         # else:
         #     learn.fit_one_cycle(1000, 1e-3)
 
