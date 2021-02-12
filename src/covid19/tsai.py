@@ -1,52 +1,42 @@
-import random
+# import random
+import calendar
+import os
 from collections import deque
 from datetime import timedelta
-
-import torch
-from fastai.callback.all import SaveModelCallback, CSVLogger, EarlyStoppingCallback
 from fastai.distributed import *
-from fastai.metrics import mae, AccumMetric, accuracy, _rmse
-from pytorch_forecasting.metrics import SMAPE, MAPE
-from tsai.data.core import get_ts_dls, TSDatasets, TSDataLoaders, ToNumpyTensor, ToFloat, flatten_check, skm_to_fastai
-from tsai.data.external import check_data
-from tsai.data.preparation import SlidingWindow, SlidingWindowPanel, df2xy
-from tsai.data.preprocessing import TSStandardize
-from tsai.data.validation import get_splits, rmse
-from tsai.learner import ts_learner, Learner
+
+# noinspection PyPackageRequirements
 import numpy as np
-import calendar
-from tsai.models.InceptionTimePlus import InceptionTimePlus, InceptionTimePlus17x17, InceptionTimePlus47x47, \
-    InceptionTimePlus62x62
-from tsai.models.TSTPlus import TSTPlus
-from tsai.models.TST import TST
-from tsai.models.ResNet import ResNet
-from tsai.models.FCNPlus import FCNPlus
-from tsai.models.ResCNN import ResCNN
-from tsai.models.XceptionTimePlus import XceptionTimePlus
-from tsai.models.RNNPlus import LSTMPlus
-from tsai.models.RNN_FCNPlus import *
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
-from matplotlib import pyplot as plt
+import pandas as pd
+# import torch
+from fastai.callback.all import SaveModelCallback, CSVLogger, EarlyStoppingCallback
+# from tsai.data.preprocessing import TSStandardize
+from fastai.learner import *
+from tsai.learner import *
+from fastai.metrics import mae, rmse, mse
+# InceptionTimePlus, InceptionTimePlus17x17, InceptionTimePlus47x47, \
+#     InceptionTimePlus62x62
+# from tsai.models.TSTPlus import TSTPlus
+# from tsai.models.TST import TST
+# from tsai.models.ResNet import ResNet
+# from tsai.models.FCNPlus import FCNPlus
+# from tsai.models.ResCNN import ResCNN
+# from tsai.models.XceptionTimePlus import XceptionTimePlus
+# from tsai.models.RNNPlus import LSTMPlus
+# from tsai.models.RNN_FCNPlus import *
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from tsai.data.core import get_ts_dls, TSDatasets, TSDataLoaders  # , ToNumpyTensor, ToFloat
+from tsai.data.external import check_data
+from tsai.data.preparation import SlidingWindow
+from tsai.models.InceptionTimePlus import InceptionTimePlus17x17
 
 from . import config
 from .datasets import RnboGovUa
-import pandas as pd
-import os
+from .metrics import mape, smape, rmse
+from .seed import set_seeds
 
 
-def skm_smape(y_pred, target):
-    y_pred, target = flatten_check(y_pred, target)
-    loss = 2 * (y_pred - target).abs() / (y_pred.abs() + target.abs() + 1e-8)
-    return loss.mean()
-
-
-def mape(y_pred, target):
-    y_pred, target = flatten_check(y_pred, target)
-    loss = (y_pred - target).abs() / (target.abs() + 1e-8)
-    return loss.mean()
-
-
-smape = AccumMetric(skm_smape)
+# noinspection PyProtectedMember
 
 
 def rescale_columns(df_columns, scaler):
@@ -56,28 +46,12 @@ def rescale_columns(df_columns, scaler):
     return X.reshape(-1)
 
 
-def set_seeds():
-    random.seed(42)
-    np.random.seed(12345)
-    torch.manual_seed(1234)
-    torch.set_deterministic(True)
-    if torch.cuda.is_available():
-        torch.backends.cudnn.benchmark = False
-
-
-set_seeds()
-
-
-class MLSTM_FCNPlus_(MLSTM_FCNPlus):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs, shuffle=False)
-
-
 def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon=7):
+    set_seeds()
     ds = RnboGovUa()
     data = RnboGovUa().prepare(
         metrics=RnboGovUa.metrics,
-        country_filter=['Ukraine']
+        country_filter=['Ukraine', 'China', 'Thailand', 'Singapore', 'Japan']
     )
     df = data.copy()
     # df = df.loc[df['region'] == 'Dnipropetrovska']
@@ -127,28 +101,26 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
 
     columns_idx = {i: n for i, n in enumerate(df.columns.values)}
 
-    vars = ['confirmed_std', 'existing_std', 'delta_confirmed_std', 'region_cat'] + list(calendar.day_name)
-    vars = [columns_idx[k] for k in sorted(columns_idx.keys()) if columns_idx[k] in vars]
+    group_name = 'country_region_cat'
+    group_category = 'country_region'
 
-    vars_dict = {k: v for v, k in enumerate(vars)}
-    target = ['existing_nx'] # ['confirmed_nx']
+    features = ['confirmed_std', 'existing_std', 'delta_confirmed_std', group_name] + list(calendar.day_name)
+    features = [columns_idx[k] for k in sorted(columns_idx.keys()) if columns_idx[k] in features]
 
-    # print(dsets[0])
-    # b = dls.one_batch()
-    # dls.show_batch()
+    vars_dict = {k: v for v, k in enumerate(features)}
+    target = ['existing_nx']  # ['confirmed_nx']
 
-    # plt.show()
-    # dls = get_ts_dls(X, y, splits=splits, tfms=tfms, batch_tfms=batch_tfms, bs=)
     model_name = model_class.__name__
     fname = f'{model_name}_window={window_length}_horizon={horizon}'
 
     if fit:
-        training_cutoff = df.idx.max() - horizon
-        train_data = df[lambda x: x.idx <= training_cutoff]
+        # training_cutoff = df.idx.max() - horizon
+        # train_data = df[lambda x: x.idx <= training_cutoff]
+        train_data = df
         wl = SlidingWindow(
             window_length,
             seq_first=True,
-            get_x=vars,
+            get_x=features,
             get_y=target,
             stride=stride,
             horizon=horizon)
@@ -158,8 +130,8 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
         y_train = []
         X_valid = []
         y_valid = []
-        for region in train_data.region.unique():
-            region_data = train_data.loc[train_data['region'] == region]
+        for region in train_data[group_name].unique():
+            region_data = train_data.loc[train_data[group_name] == region]
             assert len(region_data) == time_steps
             X_region, y_region = wl(region_data)
             y_region = y_region.astype('float32')
@@ -180,7 +152,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
         # y_train = y_train.astype('float32')
         # [10 *
         # splits = get_splits(y_train, valid_size=.5, stratify=False, random_state=23, shuffle=True)
-        validation_steps = len(train_data.region.unique())
+        validation_steps = len(train_data[group_name].unique())
         total_indexes = list(range(y_train.shape[0]))
         splits = total_indexes[:-validation_steps], total_indexes[-validation_steps:]
         check_data(X_train, y_train, splits)
@@ -197,10 +169,11 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
         # model = DataParallel(model)
         learn = Learner(
             dls, model, metrics=[
+                mse,
                 mae,
                 rmse,
                 smape,
-                mape
+                mape,
             ],
             cbs=[
                 # TensorBoardCallback(projector=False, log_dir='train_log', trace_model=False),
@@ -218,7 +191,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
             r = learn.lr_find()
             print(r)
             print(learn.loss_func)
-            learn.fit_one_cycle(10000, 1e-3)
+            learn.fit_one_cycle(100, 1e-3)
         # else:
         #     learn.fit_one_cycle(1000, 1e-3)
 
@@ -240,8 +213,8 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
     time_steps = len(test_data.idx.unique())
     X_test = []
     y_true = []
-    for region in test_data.region.unique():
-        region_data = test_data.loc[test_data['region'] == region]
+    for region in test_data[group_name].unique():
+        region_data = test_data.loc[test_data[group_name] == region]
         assert len(region_data) == time_steps
         region_history_data = region_data[:window_length]
         region_true_data = region_data[window_length:]
@@ -252,12 +225,12 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
         # region_history_data = history_data.loc[history_data['region'] == region]
         # region_true_data = true_data.loc[true_data.region == region]
 
-        X_region = np.asarray([region_history_data[vars].values.transpose(1, 0)])
-        y_region = np.asarray([region_true_data[target].values.reshape(-1)])
+        X_region = np.asarray([region_history_data[features].values.transpose(1, 0).astype('float32')])
+        y_region = np.asarray([region_true_data[target].values.reshape(-1).astype('float32')])
 
         assert X_region.shape[2] == window_length
         assert y_region.shape[1] == horizon
-        X_test.append(X_region)
+        X_test.append(X_region.astype('float32'))
         y_true.append(y_region.astype('float32'))
 
     y_true = np.vstack(y_true)
@@ -269,7 +242,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
 
     dls = get_ts_dls(X=X_test, y=y_true, splits=(split, split))
 
-    model = model_class(c_in=len(vars), c_out=horizon)
+    model = model_class(c_in=len(features), c_out=horizon)
 
     learn = Learner(
         dls, model, metrics=[mae, rmse, smape])
@@ -280,7 +253,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
     last_date = test_data['date'].max() - timedelta(days=horizon)
 
     columns = {
-        'region': deque(),
+        group_category: deque(),
         'mape': deque(),
         'rmse': deque()
     }
@@ -289,25 +262,35 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
 
     columns_prediction = {
         'date': deque(),
-        'region': deque(),
+        group_category: deque(),
         target_name: deque(),
     }
 
     for i in range(horizon):
-        # columns[f'Day_{i + window_length + 1} AE'] = deque()
         columns[f'Day_{i + window_length + 1} APE'] = deque()
 
     inverse_predicts = scalers_dict[target[0]].inverse_transform(valid_preds)
+    errors_df = pd.DataFrame(
+        {
+            'Test MSE': [mse(valid_targets, valid_preds)],
+            'Test MAE': [mae(valid_targets, valid_preds).mean()],
+            'Test RMSE': [rmse(valid_targets, valid_preds).mean()],
+            'Test SMAPE': [smape(valid_targets, valid_preds).mean()],
+            'Test MAPE': [mape(valid_targets, valid_preds).mean()],
+        }
+    )
+
+    print(errors_df)
 
     for sample_idx in range(valid_preds.shape[0]):
         input_ = inputs[sample_idx]
-        region_cat = input_[vars_dict['region_cat']][0].long()
-        region = df.region.cat.categories[region_cat]
-        columns['region'].append(region)
+        region_cat = input_[vars_dict[group_name]][0].long()
+        region = df[group_category].cat.categories[region_cat]
+        columns[group_category].append(region)
         columns['mape'].append(
             mape(valid_targets[sample_idx], valid_preds[sample_idx])
         )
-        columns['rmse'].append(_rmse(valid_targets[sample_idx], valid_preds[sample_idx]).mean())
+        columns['rmse'].append(rmse(valid_targets[sample_idx], valid_preds[sample_idx]))
         for day in range(valid_preds.shape[1]):
             row_date = last_date + timedelta(days=day + 1)
             predicted = valid_preds[sample_idx][day]
@@ -316,12 +299,11 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
             columns[f'Day_{day + window_length + 1} APE'].append(mape(predicted, target))
 
             columns_prediction['date'].append(row_date)
-            columns_prediction['region'].append(region)
+            columns_prediction[group_category].append(region)
             columns_prediction[target_name].append(inverse_predicts[sample_idx][day])
 
     test_df = pd.DataFrame.from_dict(columns)
-    # print(test_df)
-    # print(test_df.describe())
+
     test_df = test_df.append(test_df.describe(), ignore_index=False).fillna("")
     test_df.index.name = 'idx'
     print(test_df)
@@ -330,6 +312,6 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
 
     prediction_df = pd.DataFrame.from_dict(columns_prediction)
     print(prediction_df)
-    merged = data.merge(prediction_df, on=['date', 'region'], how='left')
+    merged = data.merge(prediction_df, on=['date', group_category], how='left')
     csv_path = os.path.join(config.DATASETS_DIR, f'{ds.__class__.__name__.lower()}.csv')
     merged.to_csv(csv_path)
