@@ -20,6 +20,7 @@ from tsai.models.InceptionTimePlus import InceptionTimePlus, InceptionTimePlus17
 from tsai.models.TSTPlus import TSTPlus
 from tsai.models.TST import TST
 from tsai.models.ResNet import ResNet
+from tsai.models.FCNPlus import FCNPlus
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
 from matplotlib import pyplot as plt
 
@@ -65,7 +66,7 @@ def set_seeds():
 set_seeds()
 
 
-def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon=7):
+def test(fit=True, model_class=FCNPlus, window_length=56, horizon=7):
     ds = RnboGovUa()
     data = RnboGovUa().prepare(
         metrics=RnboGovUa.metrics,
