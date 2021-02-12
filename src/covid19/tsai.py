@@ -32,8 +32,6 @@ import pandas as pd
 import os
 
 
-
-
 def skm_smape(y_pred, target):
     y_pred, target = flatten_check(y_pred, target)
     loss = 2 * (y_pred - target).abs() / (y_pred.abs() + target.abs() + 1e-8)
@@ -68,12 +66,12 @@ def set_seeds():
 set_seeds()
 
 
-class LSTM_FCNPlus_(RNN_FCNPlus):
+class GRU_FCNPlus_(GRU_FCNPlus):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, shuffle=False)
 
 
-def test(fit=True, model_class=LSTM_FCNPlus_, window_length=56, horizon=7):
+def test(fit=True, model_class=GRU_FCNPlus_, window_length=56, horizon=7):
     ds = RnboGovUa()
     data = RnboGovUa().prepare(
         metrics=RnboGovUa.metrics,
