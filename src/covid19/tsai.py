@@ -6,7 +6,7 @@ import torch
 from fastai.callback.all import SaveModelCallback, CSVLogger, EarlyStoppingCallback
 from fastai.distributed import *
 from fastai.metrics import mae, AccumMetric, accuracy
-# from pmdarima.metrics import smape
+from pytorch_forecasting.metrics import SMAPE, MAPE
 from tsai.data.core import get_ts_dls, TSDatasets, TSDataLoaders, ToNumpyTensor, ToFloat, flatten_check, skm_to_fastai
 from tsai.data.external import check_data
 from tsai.data.preparation import SlidingWindow, SlidingWindowPanel, df2xy
@@ -29,11 +29,17 @@ import pandas as pd
 import os
 
 
-# s = SMAPE()
+
 
 def skm_smape(y_pred, target):
     y_pred, target = flatten_check(y_pred, target)
     loss = 2 * (y_pred - target).abs() / (y_pred.abs() + target.abs() + 1e-8)
+    return loss.mean()
+
+
+def mape(y_pred, target):
+    y_pred, target = flatten_check(y_pred, target)
+    loss = (y_pred - target).abs() / (target.abs() + 1e-8)
     return loss.mean()
 
 
@@ -184,7 +190,8 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
             dls, model, metrics=[
                 mae,
                 rmse,
-                smape
+                smape,
+                mape
             ],
             cbs=[
                 # TensorBoardCallback(projector=False, log_dir='train_log', trace_model=False),
@@ -277,7 +284,8 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
     }
 
     for i in range(horizon):
-        columns[f'Day_{i + window_length + 1} AE'] = deque()
+        # columns[f'Day_{i + window_length + 1} AE'] = deque()
+        columns[f'Day_{i + window_length + 1} APE'] = deque()
 
     inverse_predicts = scalers_dict[target[0]].inverse_transform(valid_preds)
 
@@ -291,15 +299,20 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
             row_date = last_date + timedelta(days=day + 1)
             predicted = valid_preds[sample_idx][day]
             target = valid_targets[sample_idx][day]
-            columns[f'Day_{day + window_length + 1} AE'].append((predicted - target).abs())
+            # columns[f'Day_{day + window_length + 1} AE'].append((predicted - target).abs())
+            columns[f'Day_{day + window_length + 1} APE'].append(mape(predicted, target))
 
             columns_prediction['date'].append(row_date)
             columns_prediction['region'].append(region)
             columns_prediction[target_name].append(inverse_predicts[sample_idx][day])
 
     test_df = pd.DataFrame.from_dict(columns)
+    # print(test_df)
+    # print(test_df.describe())
+    test_df = test_df.append(test_df.describe(), ignore_index=False).fillna("")
+    test_df.index.name = 'idx'
     print(test_df)
-    print(test_df.describe())
+
     test_df.to_csv(f'{fname}_test.csv')
 
     prediction_df = pd.DataFrame.from_dict(columns_prediction)
