@@ -58,10 +58,10 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
         #     'Taiwan*', 'Malaysia', 'Vietnam'
         # ]
     )
-    # data = data.loc[~data.country.isin([
-    #     'Belgium', 'Malawi', 'Western Sahara', 'South Sudan',
-    #     'Sao Tome and Principe', 'Yemen'
-    # ])]
+    data = data.loc[~data.country.isin([
+        'Belgium', 'Malawi', 'Western Sahara', 'South Sudan',
+        'Sao Tome and Principe', 'Yemen'
+    ])]
     print(f"countries: {data.country.unique()}")
     df = data.copy()
     # df = df.loc[df['region'] == 'Dnipropetrovska']
@@ -144,7 +144,10 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
         y_valid = []
         for region in train_data[group_name].unique():
             region_data = train_data.loc[train_data[group_name] == region]
-            # assert len(region_data) == time_steps, f'Region {df[group_category].cat.categories[region]} != {time_steps}'
+            if len(region_data) != time_steps:
+                print(f'Skip: {df[group_category].cat.categories[region]}')
+                continue
+            assert len(region_data) == time_steps, f'Region {df[group_category].cat.categories[region]} != {time_steps}'
             X_region, y_region = wl(region_data)
             y_region = y_region.astype('float32')
             X_train.append(X_region[:-1])
@@ -229,6 +232,9 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
     y_true = []
     for region in test_data[group_name].unique():
         region_data = test_data.loc[test_data[group_name] == region]
+        if len(region_data) != time_steps:
+            print(f'Skip: {df[group_category].cat.categories[region]}')
+            continue
         assert len(region_data) == time_steps
         region_history_data = region_data[:window_length]
         region_true_data = region_data[window_length:]
