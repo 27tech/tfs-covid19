@@ -22,6 +22,8 @@ from tsai.models.TST import TST
 from tsai.models.ResNet import ResNet
 from tsai.models.FCNPlus import FCNPlus
 from tsai.models.ResCNN import ResCNN
+from tsai.models.XceptionTimePlus import XceptionTimePlus
+from tsai.models.RNNPlus import LSTMPlus
 from tsai.models.RNN_FCNPlus import *
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
 from matplotlib import pyplot as plt
@@ -71,7 +73,7 @@ class MLSTM_FCNPlus_(MLSTM_FCNPlus):
         super().__init__(*args, **kwargs, shuffle=False)
 
 
-def test(fit=True, model_class=MLSTM_FCNPlus_, window_length=56, horizon=7):
+def test(fit=True, model_class=XceptionTimePlus, window_length=56, horizon=7):
     ds = RnboGovUa()
     data = RnboGovUa().prepare(
         metrics=RnboGovUa.metrics,
