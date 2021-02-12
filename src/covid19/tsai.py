@@ -294,7 +294,9 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
         region_cat = input_[vars_dict['region_cat']][0].long()
         region = df.region.cat.categories[region_cat]
         columns['region'].append(region)
-        columns['mae'].append((valid_targets[sample_idx] - valid_preds[sample_idx]).abs().mean())
+        columns['mape'].append(
+            mape(valid_targets[sample_idx], valid_preds[sample_idx])
+        )
         for day in range(valid_preds.shape[1]):
             row_date = last_date + timedelta(days=day + 1)
             predicted = valid_preds[sample_idx][day]
