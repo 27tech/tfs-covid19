@@ -116,7 +116,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
     target = ['existing_nx']  # ['confirmed_nx']
 
     model_name = model_class.__name__
-    fname = f'{model_name}_window={window_length}_horizon={horizon}'
+    fname = f'{model_name}_window={window_length}_horizon={horizon}_{"-".join(features)}'
 
     if fit:
         # training_cutoff = df.idx.max() - horizon
