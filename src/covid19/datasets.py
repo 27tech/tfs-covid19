@@ -46,6 +46,8 @@ class RnboGovUa:
             'delta_recovered',
             'delta_existing',
             'delta_suspicion',
+            'lat',
+            'lng',
         ]
     )
 

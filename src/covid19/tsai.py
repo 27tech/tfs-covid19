@@ -51,7 +51,10 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
     ds = RnboGovUa()
     data = RnboGovUa().prepare(
         metrics=RnboGovUa.metrics,
-        country_filter=['Ukraine', 'China', 'Thailand', 'Singapore', 'Japan']
+        country_filter=[
+            'Ukraine',
+            # 'China', 'Thailand', 'Singapore', 'Japan'
+        ]
     )
     df = data.copy()
     # df = df.loc[df['region'] == 'Dnipropetrovska']
@@ -72,6 +75,8 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
     df['delta_existing_std'] = rescale_columns(df.delta_existing, scaler=StandardScaler())
     df['delta_existing_nx'] = rescale_columns(df.delta_existing, scaler=MinMaxScaler())
     df['delta_confirmed_nx'] = rescale_columns(df.delta_confirmed, scaler=MinMaxScaler())
+    df['lat_nx'] = rescale_columns(df.lat, scaler=MinMaxScaler())
+    df['lng_nx'] = rescale_columns(df.lng, scaler=MinMaxScaler())
     # df['confirmed_yst'] = df.confirmed.shift()
     # df['confirmed_diff'] = df['confirmed'] - df['confirmed_yst']
     # regions_count = len(df.region.unique())
@@ -104,7 +109,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
     group_name = 'country_region_cat'
     group_category = 'country_region'
 
-    features = ['confirmed_std', 'existing_std', 'delta_confirmed_std', group_name] + list(calendar.day_name)
+    features = ['confirmed_std', 'existing_std', 'delta_confirmed_std', group_name, 'lat_nx', 'lng_nx'] + list(calendar.day_name)
     features = [columns_idx[k] for k in sorted(columns_idx.keys()) if columns_idx[k] in features]
 
     vars_dict = {k: v for v, k in enumerate(features)}
