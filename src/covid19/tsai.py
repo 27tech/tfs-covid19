@@ -184,7 +184,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
                 # TensorBoardCallback(projector=False, log_dir='train_log', trace_model=False),
                 CSVLogger(fname=f'{fname}.csv'),
                 SaveModelCallback(fname=fname),
-                EarlyStoppingCallback(min_delta=0, patience=200)
+                # EarlyStoppingCallback(min_delta=0, patience=200)
             ]
         )
         # learn.reset()
@@ -193,9 +193,11 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
         # learn.to_parallel()
         # if torch.cuda.is_available():
         with learn.parallel_ctx():
-            r = learn.lr_find()
+            r = learn.fine_tune(10)
             print(r)
-            print(learn.loss_func)
+            r = learn.lr_find()
+            # print(r)
+            # print(learn.loss_func)
             learn.fit_one_cycle(10000, 1e-3)
         # else:
         #     learn.fit_one_cycle(1000, 1e-3)
