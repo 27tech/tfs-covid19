@@ -5,7 +5,7 @@ from datetime import timedelta
 import torch
 from fastai.callback.all import SaveModelCallback, CSVLogger, EarlyStoppingCallback
 from fastai.distributed import *
-from fastai.metrics import mae, AccumMetric, accuracy
+from fastai.metrics import mae, AccumMetric, accuracy, _rmse
 from pytorch_forecasting.metrics import SMAPE, MAPE
 from tsai.data.core import get_ts_dls, TSDatasets, TSDataLoaders, ToNumpyTensor, ToFloat, flatten_check, skm_to_fastai
 from tsai.data.external import check_data
@@ -73,7 +73,7 @@ class MLSTM_FCNPlus_(MLSTM_FCNPlus):
         super().__init__(*args, **kwargs, shuffle=False)
 
 
-def test(fit=True, model_class=InceptionTimePlus47x47, window_length=56, horizon=7):
+def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon=7):
     ds = RnboGovUa()
     data = RnboGovUa().prepare(
         metrics=RnboGovUa.metrics,
@@ -143,7 +143,8 @@ def test(fit=True, model_class=InceptionTimePlus47x47, window_length=56, horizon
     fname = f'{model_name}_window={window_length}_horizon={horizon}'
 
     if fit:
-        train_data = df
+        training_cutoff = df.idx.max() - horizon
+        train_data = df[lambda x: x.idx <= training_cutoff]
         wl = SlidingWindow(
             window_length,
             seq_first=True,
@@ -178,10 +179,10 @@ def test(fit=True, model_class=InceptionTimePlus47x47, window_length=56, horizon
         # X_train, y_train = wl(train_data)
         # y_train = y_train.astype('float32')
         # [10 *
-        # splits = get_splits(y_train, valid_size=.2, stratify=False, random_state=23, shuffle=True)
-        validation_steps = len(train_data.region.unique())
-        total_indexes = list(range(y_train.shape[0]))
-        splits = total_indexes[:-validation_steps], total_indexes[-validation_steps:]
+        splits = get_splits(y_train, valid_size=.5, stratify=False, random_state=23, shuffle=True)
+        # validation_steps = len(train_data.region.unique())
+        # total_indexes = list(range(y_train.shape[0]))
+        # splits = total_indexes[:-validation_steps], total_indexes[-validation_steps:]
         check_data(X_train, y_train, splits)
         tfms = None
         # batch_tfms = TSStandardize(by_sample=True, by_var=True)
@@ -280,7 +281,8 @@ def test(fit=True, model_class=InceptionTimePlus47x47, window_length=56, horizon
 
     columns = {
         'region': deque(),
-        'mape': deque()
+        'mape': deque(),
+        'rmse': deque()
     }
 
     target_name = f'predicted_{target[0]}'
@@ -305,6 +307,7 @@ def test(fit=True, model_class=InceptionTimePlus47x47, window_length=56, horizon
         columns['mape'].append(
             mape(valid_targets[sample_idx], valid_preds[sample_idx])
         )
+        columns['rmse'].append(_rmse(valid_targets[sample_idx], valid_preds[sample_idx]).mean())
         for day in range(valid_preds.shape[1]):
             row_date = last_date + timedelta(days=day + 1)
             predicted = valid_preds[sample_idx][day]
