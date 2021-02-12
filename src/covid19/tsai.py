@@ -272,7 +272,7 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
 
     columns = {
         'region': deque(),
-        'mae': deque()
+        'mape': deque()
     }
 
     target_name = f'predicted_{target[0]}'
