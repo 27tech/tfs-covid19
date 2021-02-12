@@ -22,6 +22,7 @@ from tsai.models.TST import TST
 from tsai.models.ResNet import ResNet
 from tsai.models.FCNPlus import FCNPlus
 from tsai.models.ResCNN import ResCNN
+from tsai.models.RNN_FCNPlus import RNN_FCNPlus
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
 from matplotlib import pyplot as plt
 
@@ -67,7 +68,12 @@ def set_seeds():
 set_seeds()
 
 
-def test(fit=True, model_class=ResCNN, window_length=56, horizon=7):
+class RNN_FCNPlus_(RNN_FCNPlus):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs, shuffle=False)
+
+
+def test(fit=True, model_class=RNN_FCNPlus_, window_length=56, horizon=7):
     ds = RnboGovUa()
     data = RnboGovUa().prepare(
         metrics=RnboGovUa.metrics,
