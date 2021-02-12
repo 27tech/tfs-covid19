@@ -73,7 +73,7 @@ class MLSTM_FCNPlus_(MLSTM_FCNPlus):
         super().__init__(*args, **kwargs, shuffle=False)
 
 
-def test(fit=True, model_class=XceptionTimePlus, window_length=56, horizon=7):
+def test(fit=True, model_class=InceptionTimePlus47x47, window_length=56, horizon=7):
     ds = RnboGovUa()
     data = RnboGovUa().prepare(
         metrics=RnboGovUa.metrics,
