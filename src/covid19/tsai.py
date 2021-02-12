@@ -66,12 +66,12 @@ def set_seeds():
 set_seeds()
 
 
-class GRU_FCNPlus_(GRU_FCNPlus):
+class MLSTM_FCNPlus_(MLSTM_FCNPlus):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, shuffle=False)
 
 
-def test(fit=True, model_class=GRU_FCNPlus_, window_length=56, horizon=7):
+def test(fit=True, model_class=MLSTM_FCNPlus_, window_length=56, horizon=7):
     ds = RnboGovUa()
     data = RnboGovUa().prepare(
         metrics=RnboGovUa.metrics,
