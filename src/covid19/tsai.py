@@ -179,10 +179,10 @@ def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon
         # X_train, y_train = wl(train_data)
         # y_train = y_train.astype('float32')
         # [10 *
-        splits = get_splits(y_train, valid_size=.5, stratify=False, random_state=23, shuffle=True)
-        # validation_steps = len(train_data.region.unique())
-        # total_indexes = list(range(y_train.shape[0]))
-        # splits = total_indexes[:-validation_steps], total_indexes[-validation_steps:]
+        # splits = get_splits(y_train, valid_size=.5, stratify=False, random_state=23, shuffle=True)
+        validation_steps = len(train_data.region.unique())
+        total_indexes = list(range(y_train.shape[0]))
+        splits = total_indexes[:-validation_steps], total_indexes[-validation_steps:]
         check_data(X_train, y_train, splits)
         tfms = None
         # batch_tfms = TSStandardize(by_sample=True, by_var=True)
