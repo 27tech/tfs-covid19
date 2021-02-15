@@ -3,7 +3,7 @@ from torch import sqrt
 from torch.functional import F
 from fastai.torch_core import flatten_check
 
-__all__ = ['smape', 'mape', 'rmse']
+__all__ = ['smape', 'mape', 'rmse', 'mpe']
 
 
 def smape(y_pred: Tensor, target: Tensor) -> Tensor:
@@ -15,6 +15,12 @@ def smape(y_pred: Tensor, target: Tensor) -> Tensor:
 def mape(y_pred, target) -> Tensor:
     y_pred, target = flatten_check(y_pred, target)
     loss = (y_pred - target).abs() / (target.abs() + 1e-8)
+    return loss.mean()
+
+
+def mpe(y_pred, target) -> Tensor:
+    y_pred, target = flatten_check(y_pred, target)
+    loss = (y_pred - target) / (target + 1e-8)
     return loss.mean()
 
 

@@ -1,15 +1,15 @@
-import calendar
-from collections import deque
-from pathlib import Path
-from typing import List, Dict, Optional, Set, Any, Iterable, Deque
-
-import requests
-from logging import getLogger
-from datetime import datetime, timedelta
-import os
 import json
-from pprint import pprint
+import os
+from collections import deque
+from datetime import datetime, timedelta
+from logging import getLogger
+from pathlib import Path
+from typing import List, Dict, Optional, Set, Iterable
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler
+
 import pandas as pd
+import requests
+
 from . import config
 
 logger = getLogger(__name__)
@@ -33,7 +33,7 @@ class OpenWorldDataset:
 
 class RnboGovUa:
     _root_url = 'https://api-covid19.rnbo.gov.ua/data'
-    _start_date = datetime(year=2020, month=4, day=1)
+    _start_date = datetime(year=2020, month=3, day=1)
     metrics = frozenset(
         [
             'confirmed',
@@ -46,8 +46,8 @@ class RnboGovUa:
             'delta_recovered',
             'delta_existing',
             'delta_suspicion',
-            'lat',
-            'lng',
+            # 'lat',
+            # 'lng',
         ]
     )
 
@@ -240,3 +240,21 @@ class RnboGovUa:
         logger.info(f"Dataset range: {df['date'].min()} - {df['date'].max()}")
         # df = df.set_index('idx')
         return df
+
+
+def normalize(data_frame: pd.DataFrame, columns: Iterable[str]):
+    scalers_classes = {
+        'nx': MinMaxScaler,
+        'std': StandardScaler,
+        'rob': RobustScaler
+    }
+    scalers = dict()
+    for col in columns:
+        for scaler_class in scalers_classes:
+            scaler = scalers_classes[scaler_class]()
+            values = data_frame[col].values.reshape(-1, 1)
+            scaled_values = scaler.fit_transform(values)
+            scaled_column = f'{col}_{scaler_class}'
+            data_frame[scaled_column] = scaled_values.reshape(-1)
+            scalers[scaled_column] = scaler
+    return scalers
