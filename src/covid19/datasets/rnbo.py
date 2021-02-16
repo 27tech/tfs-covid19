@@ -239,7 +239,7 @@ class Rnbo:
 
         self.normalize(self.metrics)
 
-        training_cutoff = self._dataframe.idx.max()
+        training_cutoff = self._dataframe.idx.max() - horizon
         train_dataframe = self._dataframe[self._dataframe.idx <= training_cutoff]
 
         testing_cutoff = self._dataframe.idx.max() - history_window - horizon
