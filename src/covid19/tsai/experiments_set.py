@@ -27,7 +27,7 @@ class ExperimentSet:
         self._runs = runs
 
     def run(self):
-        # fname = 'experiments.csv'
+        fname = 'experiments.csv'
         # if os.path.exists(fname):
         #     df = pd.read_csv(fname)
         #     records = df.to_records()
