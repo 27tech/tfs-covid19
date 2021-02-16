@@ -12,6 +12,7 @@ import pandas as pd
 from fastai.callback.all import SaveModelCallback, CSVLogger, EarlyStoppingCallback
 # from tsai.data.preprocessing import TSStandardize
 from fastai.learner import *
+from tsai.data.preprocessing import TSStandardize, TSNormalize
 from tsai.learner import *
 from fastai.metrics import mae, rmse, mse
 # InceptionTimePlus, InceptionTimePlus17x17, InceptionTimePlus47x47, \
@@ -24,15 +25,14 @@ from tsai.models.FCNPlus import FCNPlus
 # from tsai.models.XceptionTimePlus import XceptionTimePlus
 # from tsai.models.RNNPlus import LSTMPlus
 # from tsai.models.RNN_FCNPlus import *
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
+# from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
 from tsai.data.core import get_ts_dls, TSDatasets, TSDataLoaders  # , ToNumpyTensor, ToFloat
 from tsai.data.external import check_data
-from tsai.data.preparation import SlidingWindow
+# from tsai.data.preparation import SlidingWindow
 from tsai.models.InceptionTimePlus import InceptionTimePlus17x17
-from .datasets import normalize
 
 from . import config
-from .datasets import RnboGovUa
+from .datasets import Rnbo
 from .metrics import mape, smape, rmse, mpe
 from .seed import set_seeds
 
@@ -47,9 +47,10 @@ from .seed import set_seeds
 #     return X.reshape(-1)
 
 
-def test(fit=True, model_class=ResNet, window_length=21, horizon=7):
+def test(fit=True, model_class=InceptionTimePlus17x17, window_length=56, horizon=14):
     # set_seeds()
-    ds = RnboGovUa()
+    ds = Rnbo()
+    # ds.get
     data = RnboGovUa().prepare(
         metrics=RnboGovUa.metrics,
         country_filter=[
@@ -65,7 +66,7 @@ def test(fit=True, model_class=ResNet, window_length=21, horizon=7):
     # ])]
     # print(f"countries: {data.country.unique()}")
     df = data.copy()
-    # df = df.loc[df['region'] == 'Kyiv']
+    df = df.loc[df['region'] == 'Kyiv']
     # df['delta_confirmed_norm'] = rescale_columns(df.delta_confirmed, scaler=Normalizer())
     # df['confirmed_std'] = rescale_columns(df.confirmed, scaler=StandardScaler())
     # scalers_dict = {
@@ -96,9 +97,6 @@ def test(fit=True, model_class=ResNet, window_length=21, horizon=7):
 
     stride = 1
 
-    for idx, day_name in enumerate(calendar.day_name):
-        df[day_name] = df['date'].apply(
-            lambda x: 1. if x.day_name() == day_name else .0)
 
     #
     print(df.head(15))
@@ -123,38 +121,36 @@ def test(fit=True, model_class=ResNet, window_length=21, horizon=7):
 
     # scalers_dict['existing_norm'] = StandardScaler()
 
-    scalers_dict = normalize(df, RnboGovUa.metrics)
+    # scalers_dict = normalize(df, RnboGovUa.metrics)
 
     features = [
             'existing_nx',
             'delta_existing_nx',
-            'delta_confirmed_nx',
+            # 'delta_confirmed_nx',
             # 'delta_suspicion_nx',
-            # 'confirmed_nx',
+            # 'delta_recovered_nx',
+            # 'delta_deaths_nx',
+                   # 'confirmed_nx',
             # 'delta_existing_rob',
             # 'delta_existing_nx',
             # 'delta_existing_std',
 
             # 'deaths_nx',
-            # 'recovered_nx',
             # 'recovered_std',
             # 'existing',
             # 'suspicion_nx',
 
             # 'delta_existing_nx',
-            group_name
+            # group_name
+    ] + list(calendar.day_name)
 
-   ] + list(calendar.day_name)
-
-
-                # 'lat_nx', 'lng_nx'
     print(f'Features: {features}')
     columns_idx = {i: n for i, n in enumerate(df.columns.values)}
 
     features = [columns_idx[k] for k in sorted(columns_idx.keys()) if columns_idx[k] in features]
 
     vars_dict = {k: v for v, k in enumerate(features)}
-    target = ['delta_confirmed_nx']  # ['confirmed_nx']
+    target = ['delta_existing_std']  # ['confirmed_nx']
     print(df[features + target].sample(5))
     model_name = model_class.__name__
     fname = f'{model_name}_window={window_length}_horizon={horizon}_{"-".join(features)}'
@@ -212,10 +208,9 @@ def test(fit=True, model_class=ResNet, window_length=21, horizon=7):
         tfms = None
         # batch_tfms = TSStandardize(by_sample=True, by_var=True)
         batch_tfms = None
-        # tfms  = [None, [ToFloat(), TSForecasting]]
+        tfms = None # [None, [TSNormalize()]]
         dsets = TSDatasets(X_train, y_train, tfms=tfms, splits=splits)
-        # SlidingWindowPanel
-        dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[64, 128], batch_tfms=batch_tfms, num_workers=4,
+        dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[32, 128], batch_tfms=batch_tfms, num_workers=0,
                                        pin_memory=True)
 
         model = model_class(c_in=dls.vars, c_out=horizon)  # , seq_len=window_length)
@@ -255,15 +250,6 @@ def test(fit=True, model_class=ResNet, window_length=21, horizon=7):
     testing_cutoff = df.idx.max() - window_length - horizon
     test_data = df[lambda x: x.idx > testing_cutoff]
 
-    # wl = SlidingWindow(
-    #     window_length,
-    #     seq_first=True,
-    #     get_x=vars,
-    #     get_y=target,
-    #     stride=None,
-    #     horizon=horizon)
-    # x_test, y_true = wl(test_data)
-    # print(true_data)
 
     time_steps = len(test_data.idx.unique())
     X_test = []
