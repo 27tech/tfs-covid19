@@ -7,8 +7,8 @@ if __name__ == "__main__":
     e = ExperimentSet(
         models=[InceptionTimePlus17x17],
         lr=[1e-3],
-        early_stop_patience=100,
-        epochs=1000,
+        early_stop_patience=500,
+        epochs=10000,
         features=[
             ['existing_nx'],
             # ['delta_existing_nx'],
@@ -26,8 +26,8 @@ if __name__ == "__main__":
         targets=[
             ['delta_existing_nx']
         ],
-        window=[14, 28, 42, 56, 70, 84],
-        horizon=[7, 14, 28, 35],
+        window=list(7 * h for h in range(1, 30)),
+        horizon=list(7 * h for h in range(1, 20)),
         batch_size=[256],
         country_filter=[['Ukraine']],
         region_filter=[None],
