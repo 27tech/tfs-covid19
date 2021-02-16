@@ -10,10 +10,18 @@ if __name__ == "__main__":
         early_stop_patience=100,
         epochs=1000,
         features=[
+            ['existing_nx'],
+            ['delta_existing_nx'],
             ['existing_nx', 'delta_existing_nx'],
-            # ['existing_nx_all', 'delta_existing_nx_all'],
-            # ['existing_std', 'delta_existing_std'],
-            # ['existing_std_all', 'delta_existing_std_all'],
+            ['existing_std', 'delta_existing_std'],
+            ['existing_norm', 'delta_existing_norm'],
+            ['existing_rob', 'delta_existing_rob'],
+
+            ['existing_nx_all', 'delta_existing_nx_all'],
+            ['existing_std_all', 'delta_existing_std_all'],
+            ['existing_norm_all', 'delta_existing_norm_all'],
+            ['existing_rob_all', 'delta_existing_rob_all'],
+
         ],
         targets=[
             ['delta_existing_nx']

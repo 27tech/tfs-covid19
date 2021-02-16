@@ -27,12 +27,12 @@ class ExperimentSet:
         self._runs = runs
 
     def run(self):
-        fname = 'experiments.csv'
-        if os.path.exists(fname):
-            df = pd.read_csv(fname)
-            records = df.to_records()
-        else:
-            records = []
+        # fname = 'experiments.csv'
+        # if os.path.exists(fname):
+        #     df = pd.read_csv(fname)
+        #     records = df.to_records()
+        # else:
+        records = []
 
         experiment_id = len(records) + 1
         for model in self._models:
