@@ -30,8 +30,8 @@ if __name__ == "__main__":
 
         ],
         targets=[
-            ['delta_existing_std'],
-            # ['delta_existing_nx']
+            # ['delta_existing_std'],
+            ['delta_existing_nx']
         ],
         window=[56], #list(7 * h for h in range(1, 30)),
         horizon=[7], #list(7 * h for h in range(1, 20)),
