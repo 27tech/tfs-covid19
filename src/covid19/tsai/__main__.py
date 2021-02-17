@@ -12,7 +12,7 @@ if __name__ == "__main__":
         epochs=1000,
         features=[
             # ['existing_nx'],
-            ['existing_std', 'delta_confirmed_std'] + list(calendar.day_name),
+            ['existing_std_all', 'delta_confirmed_std_all', 'delta_recovered_std_all'] + list(calendar.day_name),
             # ['existing_std', 'delta_existing_std'],
             # ['existing_std_all', 'delta_existing_std_all'],
             # ['existing_norm', 'delta_existing_norm'],
