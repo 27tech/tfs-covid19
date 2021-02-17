@@ -7,7 +7,7 @@ from tsai.models.InceptionTimePlus import InceptionTimePlus17x17
 if __name__ == "__main__":
     e = ExperimentSet(
         models=[InceptionTimePlus17x17],
-        lr=[1e-1],
+        lr=[1e-3],
         early_stop_patience=200,
         epochs=1000,
         features=[
