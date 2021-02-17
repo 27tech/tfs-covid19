@@ -11,7 +11,7 @@ if __name__ == "__main__":
         early_stop_patience=200,
         epochs=1000,
         features=[
-            ['existing_std'],
+            ['existing_nx'],
             # ['existing_nx'] + list(calendar.day_name),
             # ['existing_std', 'delta_existing_std'],
             # ['existing_std_all', 'delta_existing_std_all'],
