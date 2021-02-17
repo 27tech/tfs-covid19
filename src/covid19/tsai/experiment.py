@@ -150,7 +150,6 @@ class Experiment:
         results.update(test_results)
 
         results['is_early_stop'] = results['epochs'] < self._epochs
-        logger.info(f'Results:\n{json.dumps(results, indent=3, sort_keys=True)}')
 
         test_dataframe = self.cutoff(self._horizon)
         test_dataframe_prediction = self.decode_prediction(
@@ -188,6 +187,7 @@ class Experiment:
 
         predict_path = os.path.join(self._dir, 'prediction.csv')
         results_dataframe.to_csv(predict_path)
+        logger.info(f'Results:\n{json.dumps(results, indent=3, sort_keys=True)}')
         return results
 
     def train(self, loaders: TSDataLoaders):
@@ -198,14 +198,15 @@ class Experiment:
             # learn.fine_tune(10)
             # print(r)
             # print(learn.loss_func)
+            logger.info('Finding LR')
             lr_find = learner.lr_find()
-            logger.info(lr_find)
+            logger.info(f'LR Find: {lr_find}')
             learner.fit_one_cycle(self._epochs, self._lr)
         duration = datetime.now() - start_time
         epochs = learner.recorder.log[0] + 1
         result = dict(
-            lr_min=lr_find.lr_min,
-            lr_steep=lr_find.lr_steep,
+            lr_min=lr_find.lr_min if lr_find else None,
+            lr_steep=lr_find.lr_steep if lr_find else None,
             epochs=epochs,
             duration=str(duration),
             epoch_time_secs=duration.total_seconds() / epochs

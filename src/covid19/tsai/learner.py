@@ -24,5 +24,5 @@ class TSAILearner(Learner):
             metrics=[mse, mae, rmse, smape, mape],
             path=work_dir,
             model_dir='',
-            loss_func=mape2
+            # loss_func=mape2
         )

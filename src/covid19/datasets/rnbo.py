@@ -248,7 +248,7 @@ class Rnbo:
 
         self.normalize(self.metrics)
 
-        training_cutoff = self._dataframe.idx.max() - horizon
+        training_cutoff = self._dataframe.idx.max()
         train_dataframe = self._dataframe[self._dataframe.idx <= training_cutoff]
 
         testing_cutoff = self._dataframe.idx.max() - history_window - horizon
@@ -267,7 +267,7 @@ class Rnbo:
 
         train_data, train_splits = self._sliding_window(
             group_name=group_name, features=features, targets=targets, history_window=history_window, horizon=horizon,
-            stride=1, splits=1, dataframe=train
+            stride=1, splits=horizon, dataframe=train
         )
 
         test_data, test_splits = self._sliding_window(
