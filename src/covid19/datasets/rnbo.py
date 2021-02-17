@@ -160,11 +160,20 @@ class Rnbo:
         return self._dataframe
 
     def normalize(self, metrics: Iterable[str]):
+
+        class FakeScaler:
+            def fit_transform(self, x):
+                return x
+
+            def inverse_transform(self, x):
+                return np.asarray(x)
+
         scalers_classes = {
+            'origin': FakeScaler,
             'nx': MinMaxScaler,
             'std': StandardScaler,
             'rob': RobustScaler,
-            'norm': Normalizer
+            'norm': Normalizer,
         }
         self._scalers = dict()
         for col in metrics:
@@ -192,7 +201,7 @@ class Rnbo:
             Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
 
         sw = SlidingWindow(window_length=history_window, seq_first=True,
-                           get_x=features, get_y=targets, stride=1, horizon=horizon)
+                           get_x=features, get_y=targets, stride=stride, horizon=horizon)
 
         time_steps = len(dataframe.idx.unique())
 
@@ -234,7 +243,7 @@ class Rnbo:
 
         return (x_all, y_all), split_indexes
 
-    def prepare(self, history_window: int, horizon: int) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def prepare(self, history_window: int, horizon: int) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         assert self._dataframe is not None, 'Scrape or load dataset before'
 
         self.normalize(self.metrics)
@@ -245,12 +254,16 @@ class Rnbo:
         testing_cutoff = self._dataframe.idx.max() - history_window - horizon
         test_dataframe = self._dataframe[lambda x: x.idx >= testing_cutoff]
 
-        return train_dataframe, test_dataframe
+        predict_cutoff = self._dataframe.idx.max() - history_window
+        predict_dataframe = self._dataframe[lambda x: x.idx >= predict_cutoff]
+
+        return train_dataframe, test_dataframe, predict_dataframe
 
     def get_splits(self, group_name: str, features: List[str], targets: List[str], history_window: int, horizon: int):
-        train, test = self.prepare(history_window=history_window, horizon=horizon)
+        train, test, predict = self.prepare(history_window=history_window, horizon=horizon)
         logger.info(f'Train Data Tail:\n{train.tail(5)}')
         logger.info(f'Test Data:\n{test}')
+        logger.info(f'Predict Data:\n{predict}')
 
         train_data, train_splits = self._sliding_window(
             group_name=group_name, features=features, targets=targets, history_window=history_window, horizon=horizon,
@@ -259,7 +272,17 @@ class Rnbo:
 
         test_data, test_splits = self._sliding_window(
             group_name=group_name, features=features, targets=targets, history_window=history_window, horizon=horizon,
-            stride=0, splits=1, dataframe=test
+            stride=1, splits=1, dataframe=test
         )
 
-        return (train_data, train_splits), (test_data, test_splits)
+        predict_data, predict_splits = self._sliding_window(
+            group_name=group_name, features=features, targets=targets, history_window=history_window, horizon=0,
+            stride=1, splits=1, dataframe=predict
+        )
+        # Drop targets
+        predict_data = (predict_data[0], None)
+
+        return (train_data, train_splits), (test_data, test_splits), (predict_data, predict_splits)
+
+    def inverse_transform(self, column: str, x: np.ndarray):
+        return self._scalers[column].inverse_transform(x)
