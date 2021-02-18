@@ -116,8 +116,8 @@ class Dataset:
 
         self.normalize()
 
-        training_cutoff = self._dataframe.date.max()
-        train_dataframe = self._dataframe[lambda x: x.date <= training_cutoff]
+        training_cutoff = self._dataframe.date.max() - timedelta(days=horizon)
+        train_dataframe = self._dataframe[lambda x: x.date < training_cutoff]
 
         testing_cutoff = self._dataframe.date.max() - timedelta(days=history_window + horizon)
         test_dataframe = self._dataframe[lambda x: x.date >= testing_cutoff]
@@ -130,10 +130,11 @@ class Dataset:
     def get_splits(self, group_name: str, features: List[str], targets: List[str], history_window: int, horizon: int):
 
         train, test, predict = self.prepare(history_window=history_window, horizon=horizon)
-
-        logger.info(f'Train Data Tail:\n{train.tail(5)}')
-        logger.info(f'Test Data:\n{test}')
-        logger.info(f'Predict Data:\n{predict}')
+        print_columns = ['date'] + features + targets
+        logger.info(f'Train Data Head:\n{train[print_columns].head(5)}')
+        logger.info(f'Train Data Tail:\n{train[print_columns].tail(5)}')
+        logger.info(f'Test Data Head:\n{test[print_columns].head(5)}')
+        logger.info(f'Predict Data Head:\n{predict[print_columns].head(5)}')
 
         train_data, train_splits = self._sliding_window(
             group_name=group_name, features=features, targets=targets, history_window=history_window, horizon=horizon,
