@@ -67,7 +67,7 @@ if __name__ == "__main__":
         # country_filter=[['Ukraine']],
         # region_filter=[['Kyiv']],
         region_filter=[None],
-        runs=3,
+        runs=10,
     )
     e.run()
 
