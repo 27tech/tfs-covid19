@@ -12,9 +12,9 @@ if __name__ == "__main__":
         epochs=10000,
         features=[
             # ['existing_nx'],
-            ['existing_std', 'confirmed_std', 'delta_existing_std'] + list(calendar.day_name),
-            # ['existing_pop', 'confirmed_pop', 'none_sick_pop', 'delta_existing_pop'],
-            # ['existing_pop', 'confirmed_pop', 'none_sick_pop', 'delta_existing_pop'] + list(calendar.day_name)
+            # ['existing_std', 'confirmed_std', 'delta_existing_std'] + list(calendar.day_name),
+            ['existing_pop', 'confirmed_pop', 'none_sick_pop', 'delta_existing_pop'],
+            ['existing_pop', 'confirmed_pop', 'none_sick_pop', 'delta_existing_pop'] + list(calendar.day_name)
             # ['delta_existing_norm'],
             # ['delta_existing_nx'],
             # ['delta_existing_std'],˚
