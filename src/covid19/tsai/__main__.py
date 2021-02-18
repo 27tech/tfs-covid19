@@ -8,8 +8,8 @@ if __name__ == "__main__":
     e = ExperimentSet(
         models=[InceptionTimePlus17x17],
         lr=[1e-3],
-        early_stop_patience=200,
-        epochs=1000,
+        early_stop_patience=10,
+        epochs=10000,
         features=[
             # ['existing_nx'],
             ['delta_existing_rob'],
@@ -40,12 +40,13 @@ if __name__ == "__main__":
             # ['delta_existing_nx']
         ],
         window=[56], #list(7 * h for h in range(1, 30)),
-        horizon=[7], #list(7 * h for h in range(1, 20)),
+        horizon=[7, 28], #list(7 * h for h in range(1, 20)),
         batch_size=[256],
-        country_filter=[['Ukraine']],
+        country_filter=[['Ukraine', 'US']],
+        # country_filter=[['Ukraine']],
         # region_filter=[['Kyiv']],
         region_filter=[None],
-        runs=5,
+        runs=1,
     )
     e.run()
 
