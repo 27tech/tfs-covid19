@@ -12,6 +12,9 @@ if __name__ == "__main__":
         epochs=1000,
         features=[
             # ['existing_nx'],
+            ['delta_existing_rob'],
+            ['delta_existing_norm'],
+            ['delta_existing_nx'],
             ['delta_existing_std'],
             # ['existing_std_all', 'confirmed_std_all', 'delta_confirmed_std_all', 'delta_recovered_std_all'] + list(calendar.day_name),
             # ['existing_std', 'delta_existing_std'],
@@ -31,8 +34,8 @@ if __name__ == "__main__":
 
         ],
         targets=[
-            ['existing_std'],
-            ['existing_nx'],
+            # ['existing_std'],
+            # ['existing_nx'],
             ['existing_rob']
             # ['delta_existing_nx']
         ],
