@@ -28,15 +28,14 @@ class OpenWorldDataset(Dataset):
             self.download_to(path_csv)
 
         if not os.path.exists(path_pkl):
-            dataframe = read_csv(path_csv)
+            dataframe: DataFrame = read_csv(path_csv)
             dataframe.date = to_datetime(dataframe.date)
             dataframe = dataframe.fillna(.0).drop(columns=['tests_units'])
-            dataframe = dataframe.sort_values(by=['date', 'location'])
-            dataframe['location'] = dataframe.location.astype('category')
+            dataframe['location'] = dataframe['location'].astype('category')
+            dataframe.sort_values(by=['date', 'location'], inplace=True)
             dataframe.to_pickle(path_pkl)
-            self._dataframe = dataframe
-        else:
-            self._dataframe = read_pickle(path_pkl)
+
+        self._dataframe = read_pickle(path_pkl)
 
         if start_date:
             self._dataframe = self._dataframe[lambda x: x.date >= start_date]
@@ -47,8 +46,8 @@ class OpenWorldDataset(Dataset):
         self._metrics = self._dataframe.columns.values[4:]
 
     def update_locations(self):
-        self._dataframe.location.cat.remove_unused_categories(inplace=True)
-        self._dataframe['location_cat'] = self._dataframe.location.cat.codes
+        self._dataframe['location'].cat.remove_unused_categories(inplace=True)
+        self._dataframe['location_cat'] = self._dataframe['location'].values.codes
 
     def download_to(self, path: str):
         logger.info(f'Downloading dataset: {self._public_url}')
@@ -64,6 +63,6 @@ class OpenWorldDataset(Dataset):
         return self._metrics
 
     def filter_country(self, countries: List[str]):
-        self._dataframe = self._dataframe.loc[self._dataframe['location'].isin(countries)]
+        self._dataframe = self._dataframe[self._dataframe['location'].isin(countries)]
         self.update_locations()
 
