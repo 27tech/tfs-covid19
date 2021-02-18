@@ -12,7 +12,7 @@ if __name__ == "__main__":
         epochs=10000,
         features=[
             # ['existing_nx'],
-            ['delta_existing_rob'],
+            ['existing_std'],
             # ['delta_existing_norm'],
             # ['delta_existing_nx'],
             # ['delta_existing_std'],
@@ -36,16 +36,17 @@ if __name__ == "__main__":
         targets=[
             # ['existing_std'],
             # ['existing_nx'],
-            ['existing_rob']
+            ['delta_existing_std'],
+            ['delta_confirmed_std'],
             # ['delta_existing_nx']
         ],
         window=[56], #list(7 * h for h in range(1, 30)),
-        horizon=[7, 28], #list(7 * h for h in range(1, 20)),
-        batch_size=[256],
+        horizon=[7], #list(7 * h for h in range(1, 20)),
+        batch_size=[8],
         country_filter=[
             ['US'],
-            ['Italy'],
-            ['France']
+            # ['Italy'],
+            # ['France']
         ],
         # country_filter=[['Ukraine']],
         # region_filter=[['Kyiv']],
