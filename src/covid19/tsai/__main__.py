@@ -2,14 +2,14 @@ from .experiment import Experiment
 from .experiments_set import ExperimentSet
 import calendar
 
-from tsai.models.InceptionTimePlus import InceptionTimePlus17x17, XCoordTime, InCoordTime
+from tsai.models.InceptionTimePlus import InceptionTimePlus17x17, InceptionTimePlus62x62
 
 if __name__ == "__main__":
     e = ExperimentSet(
-        models=[InceptionTimePlus17x17, XCoordTime, InCoordTime],
+        models=[InceptionTimePlus17x17, InceptionTimePlus62x62],
         lr=[1e-3],
-        early_stop_patience=100,
-        epochs=1000,
+        early_stop_patience=1000,
+        epochs=10000,
         features=[
             # ['existing_nx'],
             ['existing_std'],
