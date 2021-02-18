@@ -12,7 +12,7 @@ if __name__ == "__main__":
     e = ExperimentSet(
         models=[InceptionTimePlus17x17],
         lr=[1e-3],
-        early_stop_patience=2000,
+        early_stop_patience=5000,
         epochs=10000,
         features=[
             # ['total_cases_std'], #0.160758
@@ -20,7 +20,7 @@ if __name__ == "__main__":
             # ['new_cases_smoothed_nx'], 0.877701
             # ['total_cases_per_million_std'] 0.20904667675495148
             # ['total_cases_per_population', 'new_cases_per_population'] # 0.131196
-            ['total_cases_per_population', 'new_cases_per_population', 'non_sick_per_population']
+            ['total_cases_per_population', 'new_cases_per_population', 'non_sick_per_population'] #0.293098
 
             # ['existing_nx'],
             # ['existing_std', 'confirmed_std', 'delta_existing_std'] + list(calendar.day_name),
