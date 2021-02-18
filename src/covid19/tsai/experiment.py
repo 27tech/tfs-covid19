@@ -8,11 +8,9 @@ import numpy as np
 from torch import Tensor
 from tsai.data.core import TSDatasets, TSDataLoaders
 from tsai.data.external import check_data
-from tsai.learner import ts_learner
-from tsai.models.InceptionTime import InceptionTime
-from tsai.models.InceptionTimePlus import InceptionTimePlus
 
 from covid19.datasets.rnbo import Rnbo
+from covid19.datasets.open_world import OpenWorldDataset
 from .learner import TSAILearner
 import os
 from covid19 import config
@@ -23,7 +21,7 @@ logger = getLogger(__name__)
 class Experiment:
     def __init__(self, model_class: type, lr: float, early_stop_patience: int, epochs: int, features: List[str],
                  targets: List[str], window: int, horizon: int, batch_size: int, country_filter: List[str],
-                 region_filter: Optional[List[str]] = None, group_name='country_region'):
+                 region_filter: Optional[List[str]] = None, group_name='location'):
         self._lr: float = lr
         self._epochs: int = epochs
         self._name: str = datetime.now().strftime(f'%Y-%m-%d %H:%M {model_class.__name__}')
@@ -44,18 +42,16 @@ class Experiment:
 
         assert len(self._targets) == 1
 
-        self._dataset = Rnbo()
+        self._dataset = OpenWorldDataset()
 
-        self._dataset.scrape(
-            country_filter=self._country_filter, metrics=Rnbo.metrics, region_filter=self._region_filter)
+        self._dataset.filter_country(self._country_filter)
 
-        population = 328200000.0
-
-        self._dataset._dataframe['confirmed_pop'] = self._dataset._dataframe['confirmed'] / population
-        self._dataset._dataframe['existing_pop'] = self._dataset._dataframe['existing'] / population
-        self._dataset._dataframe['none_sick_pop'] = 1. - self._dataset._dataframe['confirmed_pop']
-        self._dataset._dataframe['delta_existing_pop'] = self._dataset._dataframe['delta_existing'] / population
-
+        # population = 328200000.0
+        #
+        # self._dataset._dataframe['confirmed_pop'] = self._dataset._dataframe['confirmed'] / population
+        # self._dataset._dataframe['existing_pop'] = self._dataset._dataframe['existing'] / population
+        # self._dataset._dataframe['none_sick_pop'] = 1. - self._dataset._dataframe['confirmed_pop']
+        # self._dataset._dataframe['delta_existing_pop'] = self._dataset._dataframe['delta_existing'] / population
 
         self._columns_vocab = {i: n for i, n in enumerate(self._dataset.data_frame.columns.values)}
 
@@ -96,7 +92,7 @@ class Experiment:
 
         return learner
 
-    def decode_prediction(self, last_date, last_idx, inputs: Tensor, preds: Tensor, time_shift: int) -> DataFrame:
+    def decode_prediction(self, last_date, inputs: Tensor, preds: Tensor, time_shift: int) -> DataFrame:
 
         inv_preds = self._dataset.inverse_transform(column=self._targets[0], x=preds)
 
@@ -107,13 +103,11 @@ class Experiment:
             group_preds = inv_preds[group_idx].T
             for time_idx in range(group_preds.shape[0]):
                 current_date = last_date + timedelta(days=time_idx + time_shift)
-                current_time_idx = last_idx + time_idx + time_shift
                 time_preds = group_preds[time_idx]
                 group_cat = group_input[time_idx][self._group_name_cat_idx].long().item()
                 group_name = self._dataset.data_frame[self._group_name].cat.categories[group_cat]
                 records.append(
                     {
-                        'idx': current_time_idx,
                         'date': current_date,
                         self._group_name: group_name,
                         self._target_name_predict: np.round(time_preds).astype('int')
@@ -123,9 +117,9 @@ class Experiment:
         return DataFrame.from_records(records)
 
     def cutoff(self, window: int) -> DataFrame:
-        cutoff = self._dataset.data_frame.idx.max() - window
-        cutoff_data_frame = self._dataset.data_frame[lambda x: x.idx > cutoff]
-        return cutoff_data_frame[['idx', 'date', self._group_name, self._target_name]]
+        cutoff = self._dataset.data_frame.date.max() - timedelta(days=window)
+        cutoff_data_frame = self._dataset.data_frame[lambda x: x.date > cutoff]
+        return cutoff_data_frame[['date', self._group_name, self._target_name]]
 
     def run(self):
         logger.info(f'Running experiment: {self._name}')
@@ -166,13 +160,13 @@ class Experiment:
 
         test_dataframe = self.cutoff(self._horizon)
         test_dataframe_prediction = self.decode_prediction(
-            last_date=test_dataframe.date.min(), last_idx=test_dataframe.idx.min(),
+            last_date=test_dataframe.date.min(),
             inputs=test_inputs, preds=test_predictions, time_shift=0
         )
 
         results_dataframe = test_dataframe.merge(
             test_dataframe_prediction,
-            on=['idx', 'date', self._group_name], how='left'
+            on=['date', self._group_name], how='left'
         )
 
         results_dataframe['absolute error'] = (
@@ -191,13 +185,13 @@ class Experiment:
         forecast_dataframe = self.cutoff(self._window)
 
         forecast_dataframe_prediction = self.decode_prediction(
-            last_date=forecast_dataframe.date.max(), last_idx=forecast_dataframe.idx.max(),
+            last_date=forecast_dataframe.date.max(),
             inputs=forecast_inputs, preds=forecast_preds, time_shift=1
         )
 
-        results_dataframe = results_dataframe.append(forecast_dataframe_prediction).set_index('idx')
+        results_dataframe = results_dataframe.append(forecast_dataframe_prediction).set_index('date')
         results_dataframe = results_dataframe.append(results_dataframe.describe(), ignore_index=False).fillna("")
-        results_dataframe.index.name = 'idx'
+        results_dataframe.index.name = 'date'
 
         predict_path = os.path.join(self._dir, 'prediction.csv')
         results_dataframe.to_csv(predict_path)

@@ -7,16 +7,19 @@ from covid19.datasets.open_world import OpenWorldDataset
 
 if __name__ == "__main__":
     # d = OpenWorldDataset()
+    # d.filter_country(['Ukraine'])
+    # print(d._dataframe)
     e = ExperimentSet(
         models=[InceptionTimePlus17x17],
         lr=[1e-3],
         early_stop_patience=2000,
         epochs=10000,
         features=[
+            ['total_cases_std']
             # ['existing_nx'],
             # ['existing_std', 'confirmed_std', 'delta_existing_std'] + list(calendar.day_name),
-            ['existing_pop', 'confirmed_pop', 'none_sick_pop', 'delta_existing_pop'],
-            ['existing_pop', 'confirmed_pop', 'none_sick_pop', 'delta_existing_pop'] + list(calendar.day_name)
+            # ['existing_pop', 'confirmed_pop', 'none_sick_pop', 'delta_existing_pop'],
+            # ['existing_pop', 'confirmed_pop', 'none_sick_pop', 'delta_existing_pop'] + list(calendar.day_name)
             # ['delta_existing_norm'],
             # ['delta_existing_nx'],
             # ['delta_existing_std'],˚
@@ -38,24 +41,25 @@ if __name__ == "__main__":
 
         ],
         targets=[
+            ['new_cases_nx']
             # ['existing_std'],
             # ['existing_nx'],
             # ['delta_existing_std'],
-            ['delta_confirmed_nx'],
+            # ['delta_confirmed_nx'],
             # ['delta_existing_nx']
         ],
         window=[56], #list(7 * h for h in range(1, 30)),
         horizon=[7], #list(7 * h for h in range(1, 20)),
         batch_size=[256],
         country_filter=[
-            ['US'],
+            ['United States'],
             # ['Italy'],
             # ['France']
         ],
         # country_filter=[['Ukraine']],
         # region_filter=[['Kyiv']],
         region_filter=[None],
-        runs=3,
+        runs=2,
     )
     e.run()
 
