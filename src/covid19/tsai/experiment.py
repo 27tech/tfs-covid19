@@ -49,6 +49,13 @@ class Experiment:
         self._dataset.scrape(
             country_filter=self._country_filter, metrics=Rnbo.metrics, region_filter=self._region_filter)
 
+        population = 328200000.0
+
+        self._dataset._dataframe['confirmed_pop'] = self._dataset._dataframe['confirmed'] / population
+        self._dataset._dataframe['existing_pop'] = self._dataset._dataframe['existing'] / population
+        self._dataset._dataframe['none_sick_pop'] = 1. - self._dataset._dataframe['confirmed_pop']
+
+
         self._columns_vocab = {i: n for i, n in enumerate(self._dataset.data_frame.columns.values)}
 
         self._features_idx = [

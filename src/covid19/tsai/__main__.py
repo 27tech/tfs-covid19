@@ -6,13 +6,14 @@ from tsai.models.InceptionTimePlus import InceptionTimePlus17x17, InceptionTimeP
 
 if __name__ == "__main__":
     e = ExperimentSet(
-        models=[InceptionTimePlus17x17, InceptionTimePlus62x62],
-        lr=[1e-4],
+        models=[InceptionTimePlus17x17],
+        lr=[1e-3],
         early_stop_patience=1000,
         epochs=10000,
         features=[
             # ['existing_nx'],
-            ['existing_std'],
+            # ['existing_std', 'confirmed_std'],
+            ['existing_pop', 'confirmed_pop', 'none_sick_pop'],
             # ['delta_existing_norm'],
             # ['delta_existing_nx'],
             # ['delta_existing_std'],

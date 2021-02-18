@@ -1,6 +1,6 @@
 import os
 
-from fastai.callback.all import SaveModelCallback, CSVLogger, EarlyStoppingCallback
+from fastai.callback.all import SaveModelCallback, CSVLogger, EarlyStoppingCallback, ReduceLROnPlateau
 from fastai.learner import Learner
 from fastai.metrics import mae, mse
 
@@ -18,6 +18,7 @@ class TSAILearner(Learner):
             cbs=[
                 CSVLogger(),
                 SaveModelCallback(with_opt=True),
+                ReduceLROnPlateau(patience=early_stop_patience // 4, min_lr=1e-5),
                 EarlyStoppingCallback(min_delta=0, patience=early_stop_patience)
             ],
             metrics=[mse, mae, rmse, smape, mape],
