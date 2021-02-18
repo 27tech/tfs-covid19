@@ -7,7 +7,7 @@ from tsai.models.InceptionTimePlus import InceptionTimePlus17x17, InceptionTimeP
 if __name__ == "__main__":
     e = ExperimentSet(
         models=[InceptionTimePlus17x17, InceptionTimePlus62x62],
-        lr=[1e-3],
+        lr=[1e-4],
         early_stop_patience=1000,
         epochs=10000,
         features=[
@@ -37,7 +37,7 @@ if __name__ == "__main__":
             # ['existing_std'],
             # ['existing_nx'],
             # ['delta_existing_std'],
-            ['delta_confirmed_std'],
+            ['delta_confirmed_nx'],
             # ['delta_existing_nx']
         ],
         window=[56], #list(7 * h for h in range(1, 30)),
