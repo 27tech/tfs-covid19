@@ -45,6 +45,7 @@ class OpenWorldDataset(Dataset):
 
         self._dataframe['total_cases_per_population'] = self._dataframe['total_cases'] / self._dataframe['population']
         self._dataframe['new_cases_per_population'] = self._dataframe['new_cases'] / self._dataframe['population']
+        self._dataframe['non_sick_per_population'] = 1. - self._dataframe['total_cases_per_population']
 
         logger.info(f'Dataset range: [{self._dataframe.date.min().date()} {self._dataframe.date.max().date()}]')
         self._metrics = self._dataframe.columns.values[4:]

@@ -18,8 +18,9 @@ if __name__ == "__main__":
             # ['total_cases_std'], #0.160758
             # ['total_cases_std', 'new_cases_std'] # 0.462105
             # ['new_cases_smoothed_nx'], 0.877701
-            # ['total_cases_per_million_std'] 0.224678
-            ['total_cases_per_population', 'new_cases_per_population']
+            # ['total_cases_per_million_std'] 0.20904667675495148
+            # ['total_cases_per_population', 'new_cases_per_population'] # 0.131196
+            ['total_cases_per_population', 'new_cases_per_population', 'non_sick_per_population']
 
             # ['existing_nx'],
             # ['existing_std', 'confirmed_std', 'delta_existing_std'] + list(calendar.day_name),
