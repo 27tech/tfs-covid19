@@ -13,9 +13,9 @@ if __name__ == "__main__":
         features=[
             # ['existing_nx'],
             ['delta_existing_rob'],
-            ['delta_existing_norm'],
-            ['delta_existing_nx'],
-            ['delta_existing_std'],
+            # ['delta_existing_norm'],
+            # ['delta_existing_nx'],
+            # ['delta_existing_std'],
             # ['existing_std_all', 'confirmed_std_all', 'delta_confirmed_std_all', 'delta_recovered_std_all'] + list(calendar.day_name),
             # ['existing_std', 'delta_existing_std'],
             # ['existing_std_all', 'delta_existing_std_all'],

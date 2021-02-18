@@ -8,6 +8,9 @@ import numpy as np
 from torch import Tensor
 from tsai.data.core import TSDatasets, TSDataLoaders
 from tsai.data.external import check_data
+from tsai.learner import ts_learner
+from tsai.models.InceptionTime import InceptionTime
+from tsai.models.InceptionTimePlus import InceptionTimePlus
 
 from covid19.datasets.rnbo import Rnbo
 from .learner import TSAILearner
@@ -60,8 +63,10 @@ class Experiment:
 
         self._target_name_predict = f'{self._target_name}_predict'
 
-    def _construct_model(self):
-        return self._model_class(c_in=len(self._features), c_out=self._horizon)
+    def _construct_model(self, dls: TSDataLoaders):
+        # ts_learner(dls, InceptionTimePlus, metrics=[], cbs=None)
+        # return self._model_class(c_in=dls.vars, seq_len=dls.len, c_out=dls.c)
+        return self._model_class(c_in=len(self._features), c_out=self._horizon, seq_len=self._window)
 
     def get_dls(self, data: Tuple[np.ndarray, np.ndarray], splits: Tuple[np.ndarray, np.ndarray]) -> TSDataLoaders:
         x, y = data
@@ -75,7 +80,7 @@ class Experiment:
             num_workers=0, pin_memory=True)
 
     def create_learner(self, loaders: TSDataLoaders, load: bool = False, predict: bool = False):
-        learner = TSAILearner(dls=loaders, model=self._construct_model(), early_stop_patience=self._early_stop_patience,
+        learner = TSAILearner(dls=loaders, model=self._construct_model(loaders), early_stop_patience=self._early_stop_patience,
                               work_dir=self._dir, predict=predict)
 
         if load:

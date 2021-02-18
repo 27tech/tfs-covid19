@@ -12,7 +12,6 @@ from fastai.distributed import *
 
 class TSAILearner(Learner):
     def __init__(self, dls, model, early_stop_patience: int, work_dir: str, predict: bool):
-
         super().__init__(
             dls=dls,
             model=model,
@@ -23,6 +22,5 @@ class TSAILearner(Learner):
             ],
             metrics=[mse, mae, rmse, smape, mape],
             path=work_dir,
-            model_dir='',
-            # loss_func=mape2
+            model_dir=''
         )
