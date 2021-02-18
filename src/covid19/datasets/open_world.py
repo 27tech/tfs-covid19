@@ -15,7 +15,8 @@ logger = getLogger(__name__)
 class OpenWorldDataset(Dataset):
     _public_url: str = 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv'
 
-    def __init__(self, path: Optional[str] = None, start_date: Optional[datetime] = datetime(year=2020, month=3, day=1)):
+    def __init__(self, path: Optional[str] = None,
+                 start_date: Optional[datetime] = datetime(year=2020, month=3, day=1)):
         super().__init__()
 
         if path is None:
@@ -46,6 +47,11 @@ class OpenWorldDataset(Dataset):
         self._dataframe['total_cases_per_population'] = self._dataframe['total_cases'] / self._dataframe['population']
         self._dataframe['new_cases_per_population'] = self._dataframe['new_cases'] / self._dataframe['population']
         self._dataframe['non_sick_per_population'] = 1. - self._dataframe['total_cases_per_population']
+        self._dataframe['people_vaccinated_per_population'] = self._dataframe['people_vaccinated'] / self._dataframe[
+            'population']
+
+        self._dataframe['people_fully_vaccinated_per_population'] = \
+            self._dataframe['people_fully_vaccinated'] / self._dataframe['population']
 
         logger.info(f'Dataset range: [{self._dataframe.date.min().date()} {self._dataframe.date.max().date()}]')
         self._metrics = self._dataframe.columns.values[4:]
@@ -70,4 +76,3 @@ class OpenWorldDataset(Dataset):
     def filter_country(self, countries: List[str]):
         self._dataframe = self._dataframe[self._dataframe['location'].isin(countries)]
         self.update_locations()
-

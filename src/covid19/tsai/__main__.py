@@ -20,8 +20,20 @@ if __name__ == "__main__":
             # ['new_cases_smoothed_nx'], 0.877701
             # ['total_cases_per_million_std'] 0.20904667675495148
             # ['total_cases_per_population', 'new_cases_per_population'] # 0.131196
-            ['total_cases_per_population', 'new_cases_per_population', 'non_sick_per_population'] #0.293098
-
+            # ['total_cases_per_population', 'new_cases_per_population', 'non_sick_per_population'], #0.293098
+            [
+                'total_cases_per_population',
+                'new_cases_per_population',
+                'non_sick_per_population',
+                'people_vaccinated_per_population'
+            ],
+            [
+                'total_cases_per_population',
+                'new_cases_per_population',
+                'non_sick_per_population',
+                'people_vaccinated_per_population',
+                'people_fully_vaccinated_per_population'
+            ],
             # ['existing_nx'],
             # ['existing_std', 'confirmed_std', 'delta_existing_std'] + list(calendar.day_name),
             # ['existing_pop', 'confirmed_pop', 'none_sick_pop', 'delta_existing_pop'],
