@@ -8,7 +8,7 @@ if __name__ == "__main__":
     e = ExperimentSet(
         models=[InceptionTimePlus17x17],
         lr=[1e-3],
-        early_stop_patience=1000,
+        early_stop_patience=500,
         epochs=10000,
         features=[
             # ['existing_nx'],
