@@ -41,8 +41,8 @@ if __name__ == "__main__":
 
         ],
         targets=[
-            # ['new_cases_nx'],
-            ['new_cases_std']
+            ['new_cases_nx'],
+            # ['new_cases_std']
             # ['existing_std'],
             # ['existing_nx'],
             # ['delta_existing_std'],
