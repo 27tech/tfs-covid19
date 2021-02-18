@@ -9,7 +9,7 @@ if __name__ == "__main__":
         models=[InceptionTimePlus17x17, XCoordTime, InCoordTime],
         lr=[1e-3],
         early_stop_patience=100,
-        epochs=100,
+        epochs=1000,
         features=[
             # ['existing_nx'],
             ['existing_std'],
