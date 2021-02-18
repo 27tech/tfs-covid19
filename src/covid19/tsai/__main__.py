@@ -17,7 +17,8 @@ if __name__ == "__main__":
         features=[
             # ['total_cases_std'], #0.160758
             # ['total_cases_std', 'new_cases_std'] # 0.462105
-            ['new_cases_smoothed_nx'],
+            # ['new_cases_smoothed_nx'], 0.877701
+            ['total_cases_per_million_std']
 
             # ['existing_nx'],
             # ['existing_std', 'confirmed_std', 'delta_existing_std'] + list(calendar.day_name),
@@ -44,7 +45,8 @@ if __name__ == "__main__":
 
         ],
         targets=[
-            ['new_cases_nx'],
+            # ['new_cases_nx'],
+            ['new_cases_per_million']
             # ['new_cases_std']
             # ['existing_std'],
             # ['existing_nx'],
