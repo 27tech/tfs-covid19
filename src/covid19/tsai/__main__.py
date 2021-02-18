@@ -15,7 +15,10 @@ if __name__ == "__main__":
         early_stop_patience=2000,
         epochs=10000,
         features=[
-            ['total_cases_std']
+            # ['total_cases_std'], #0.160758
+
+            ['total_cases_std', 'new_cases_std']
+
             # ['existing_nx'],
             # ['existing_std', 'confirmed_std', 'delta_existing_std'] + list(calendar.day_name),
             # ['existing_pop', 'confirmed_pop', 'none_sick_pop', 'delta_existing_pop'],
