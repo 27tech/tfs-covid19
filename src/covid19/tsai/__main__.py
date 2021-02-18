@@ -16,8 +16,8 @@ if __name__ == "__main__":
         epochs=10000,
         features=[
             # ['total_cases_std'], #0.160758
-
-            ['total_cases_std', 'new_cases_std']
+            # ['total_cases_std', 'new_cases_std'] # 0.462105
+            ['new_cases_smoothed_nx'],
 
             # ['existing_nx'],
             # ['existing_std', 'confirmed_std', 'delta_existing_std'] + list(calendar.day_name),
