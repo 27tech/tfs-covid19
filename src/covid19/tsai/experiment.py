@@ -175,7 +175,8 @@ class Experiment:
                 results_dataframe[self._target_name_predict] - results_dataframe[self._target_name]
         ).abs() / (results_dataframe[self._target_name].abs() + 1e-8) * 100
 
-        results['Test absolute % error'] = results_dataframe['absolute % error'].mean()
+        results['Test MAE %'] = results_dataframe['absolute % error'].mean()
+        results['Test MAE humans'] = int(results_dataframe['absolute error'].mean())
 
         forecast_inputs, forecast_preds, _ = self.predict(loaders=self.get_dls(data=predict[0], splits=predict[1]))
 
@@ -203,9 +204,10 @@ class Experiment:
             # learn.fine_tune(10)
             # print(r)
             # print(learn.loss_func)
-            logger.info('Finding LR')
-            lr_find = learner.lr_find()
-            logger.info(f'LR Find: {lr_find}')
+            # logger.info('Finding LR')
+            # lr_find = learner.lr_find()
+            # logger.info(f'LR Find: {lr_find}')
+            lr_find = None
             learner.fit_one_cycle(self._epochs, self._lr)
         duration = datetime.now() - start_time
         epochs = learner.recorder.log[0] + 1

@@ -59,6 +59,6 @@ class ExperimentSet:
                                                 all_results.to_csv(fname)
                                                 describe = all_results.describe()
                                                 describe.to_csv('experiments_describe.csv')
-                                                logger.info(f'Results:\n{all_results.tail(5)}')
+                                                logger.info(f'Results:\n{all_results}')
                                                 logger.info(f'Describe:\n{all_results.describe()}')
                                                 experiment_id += 1

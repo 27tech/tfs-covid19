@@ -2,14 +2,14 @@ from .experiment import Experiment
 from .experiments_set import ExperimentSet
 import calendar
 
-from tsai.models.InceptionTimePlus import InceptionTimePlus17x17
+from tsai.models.InceptionTimePlus import InceptionTimePlus17x17, XCoordTime, InCoordTime
 
 if __name__ == "__main__":
     e = ExperimentSet(
-        models=[InceptionTimePlus17x17],
+        models=[InceptionTimePlus17x17, XCoordTime, InCoordTime],
         lr=[1e-3],
         early_stop_patience=100,
-        epochs=10000,
+        epochs=100,
         features=[
             # ['existing_nx'],
             ['existing_std'],
@@ -36,13 +36,13 @@ if __name__ == "__main__":
         targets=[
             # ['existing_std'],
             # ['existing_nx'],
-            ['delta_existing_std'],
+            # ['delta_existing_std'],
             ['delta_confirmed_std'],
             # ['delta_existing_nx']
         ],
         window=[56], #list(7 * h for h in range(1, 30)),
         horizon=[7], #list(7 * h for h in range(1, 20)),
-        batch_size=[8],
+        batch_size=[256],
         country_filter=[
             ['US'],
             # ['Italy'],
