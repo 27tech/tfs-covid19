@@ -32,6 +32,7 @@ class OpenWorldDataset(Dataset):
             dataframe.date = to_datetime(dataframe.date)
             dataframe = dataframe.fillna(.0).drop(columns=['tests_units'])
             dataframe = dataframe.sort_values(by=['date', 'location'])
+            dataframe['location'] = dataframe.location.astype('category')
             dataframe.to_pickle(path_pkl)
             self._dataframe = dataframe
         else:
@@ -41,7 +42,6 @@ class OpenWorldDataset(Dataset):
             self._dataframe = self._dataframe[lambda x: x.date >= start_date]
 
         self._dataframe.date.index = PeriodIndex(self._dataframe.date, freq="D", name="Period")
-        self._dataframe.location = self._dataframe.location.astype('category')
         self.update_locations()
         logger.info(f'Dataset range: [{self._dataframe.date.min().date()} {self._dataframe.date.max().date()}]')
         self._metrics = self._dataframe.columns.values[4:]
@@ -64,6 +64,6 @@ class OpenWorldDataset(Dataset):
         return self._metrics
 
     def filter_country(self, countries: List[str]):
-        self._dataframe = self._dataframe[self._dataframe.location.isin(countries)]
+        self._dataframe = self._dataframe.loc[self._dataframe['location'].isin(countries)]
         self.update_locations()
 
