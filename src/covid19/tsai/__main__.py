@@ -6,11 +6,11 @@ from tsai.models.InceptionTimePlus import InceptionTimePlus17x17
 from covid19.datasets.open_world import OpenWorldDataset
 
 if __name__ == "__main__":
-    # d = OpenWorldDataset()
+    d = OpenWorldDataset()
     e = ExperimentSet(
         models=[InceptionTimePlus17x17],
         lr=[1e-3],
-        early_stop_patience=1000,
+        early_stop_patience=2000,
         epochs=10000,
         features=[
             # ['existing_nx'],
