@@ -41,7 +41,8 @@ if __name__ == "__main__":
 
         ],
         targets=[
-            ['new_cases_nx']
+            ['new_cases_nx'],
+            ['new_cases_std']
             # ['existing_std'],
             # ['existing_nx'],
             # ['delta_existing_std'],
@@ -59,7 +60,7 @@ if __name__ == "__main__":
         # country_filter=[['Ukraine']],
         # region_filter=[['Kyiv']],
         region_filter=[None],
-        runs=2,
+        runs=3,
     )
     e.run()
 

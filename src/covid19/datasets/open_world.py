@@ -30,6 +30,8 @@ class OpenWorldDataset(Dataset):
         if not os.path.exists(path_pkl):
             dataframe = read_csv(path_csv)
             dataframe.date = to_datetime(dataframe.date)
+            dataframe = dataframe.fillna(.0).drop(columns=['tests_units'])
+            dataframe = dataframe.sort_values(by=['date', 'location'])
             dataframe.to_pickle(path_pkl)
             self._dataframe = dataframe
         else:
@@ -38,7 +40,6 @@ class OpenWorldDataset(Dataset):
         if start_date:
             self._dataframe = self._dataframe[lambda x: x.date >= start_date]
 
-        self._dataframe = self._dataframe.fillna(.0).drop(columns=['tests_units'])
         self._dataframe.date.index = PeriodIndex(self._dataframe.date, freq="D", name="Period")
         self._dataframe.location = self._dataframe.location.astype('category')
         self.update_locations()
