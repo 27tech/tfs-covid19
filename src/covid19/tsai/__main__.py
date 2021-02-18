@@ -3,18 +3,19 @@ from .experiments_set import ExperimentSet
 import calendar
 from covid19.models import Transformer
 from tsai.models.InceptionTimePlus import InceptionTimePlus17x17
-
+from covid19.datasets.open_world import OpenWorldDataset
 
 if __name__ == "__main__":
+    # d = OpenWorldDataset()
     e = ExperimentSet(
-        models=[Transformer, InceptionTimePlus17x17],
+        models=[InceptionTimePlus17x17],
         lr=[1e-3],
         early_stop_patience=1000,
         epochs=10000,
         features=[
             # ['existing_nx'],
-            ['existing_std', 'confirmed_std', 'delta_existing_std'] + list(calendar.day_name),
-            # ['existing_pop', 'confirmed_pop', 'none_sick_pop', 'delta_existing_pop'],
+            # ['existing_std', 'confirmed_std', 'delta_existing_std'] + list(calendar.day_name),
+            ['existing_pop', 'confirmed_pop', 'none_sick_pop', 'delta_existing_pop'],
             ['existing_pop', 'confirmed_pop', 'none_sick_pop', 'delta_existing_pop'] + list(calendar.day_name)
             # ['delta_existing_norm'],
             # ['delta_existing_nx'],
