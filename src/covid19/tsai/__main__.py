@@ -12,10 +12,10 @@ if __name__ == "__main__":
     e = ExperimentSet(
         models=[InceptionTimePlus17x17],
         lr=[1e-3],
-        early_stop_patience=1000,
+        early_stop_patience=100,
         epochs=10000,
         features=[
-            ['total_cases_std'], #0.160758
+            ['total_cases'], #0.160758
             # ['total_cases_std', 'new_cases_std'] # 0.462105
             # ['new_cases_smoothed_nx'], 0.877701
             # ['total_cases_per_million_std'] # 0.20904667675495148
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         ],
         targets=[
             # ['new_cases_per_million_nx']
-            ['new_cases_nx'],
+            ['new_cases_origin'],
             # ['new_cases_per_population_origin']
             # ['new_cases_std']
             # ['existing_std'],
