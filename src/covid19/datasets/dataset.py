@@ -132,7 +132,7 @@ class Dataset:
         return train_dataframe, test_dataframe, predict_dataframe
 
     def get_splits(self, group_name: str, features: List[str], targets: List[str], history_window: int, horizon: int):
-        # self.normalize(features + targets)
+        self.normalize()
         train, test, predict = self.prepare(history_window=history_window, horizon=horizon)
         print_columns = ['date'] + features + targets
         logger.info(f'Train Data Head:\n{train[print_columns].head(5)}')
