@@ -2,6 +2,7 @@ from torch import Tensor
 from torch import sqrt
 from torch.functional import F
 from fastai.torch_core import flatten_check
+
 import torch
 
 __all__ = ['smape', 'mape', 'rmse', 'mpe', 'mape2']

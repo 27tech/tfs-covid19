@@ -6,6 +6,7 @@ from fastai.metrics import mae, mse
 
 from covid19.config import CHECKPOINTS_DIR
 from covid19.metrics import mape, smape, rmse, mape2
+import numpy as np
 
 from fastai.distributed import *
 
@@ -18,10 +19,16 @@ class TSAILearner(Learner):
             cbs=[
                 CSVLogger(),
                 SaveModelCallback(with_opt=True),
-                ReduceLROnPlateau(patience=100, min_lr=1e-6),
+                # ReduceLROnPlateau(patience=100, min_lr=1e-6),
                 EarlyStoppingCallback(min_delta=0, patience=early_stop_patience)
             ],
-            metrics=[mse, mae, rmse, smape, mape],
+            metrics=[
+                mse, mae, rmse,
+                smape,
+                # MASE,
+                mape
+            ],
             path=work_dir,
-            model_dir=''
+            model_dir='',
+            # loss_func=mape
         )

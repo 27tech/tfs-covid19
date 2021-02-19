@@ -4,7 +4,7 @@ import numpy as np
 from pandas import DataFrame
 from logging import getLogger
 from tsai.data.preparation import SlidingWindow
-from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler, Normalizer
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler, Normalizer, MaxAbsScaler
 
 logger = getLogger(__name__)
 
@@ -33,15 +33,18 @@ class Dataset:
                 return np.asarray(x)
 
         scalers_classes = {
-            'origin': FakeScaler,
             'nx': MinMaxScaler,
+            'origin': FakeScaler,
             'std': StandardScaler,
             'rob': RobustScaler,
             'norm': Normalizer,
+            'xabs': MaxAbsScaler
+
         }
         self._scalers = dict()
         for col in self.metrics:
-            values = self._dataframe[col].values.reshape(-1, 1).astype('float32')
+            # self._dataframe[col] = self._dataframe[col]
+            values = self._dataframe[col].values.reshape(-1, 1)
             for scaler_class in scalers_classes:
                 scaler = scalers_classes[scaler_class]()
                 scaled_values = scaler.fit_transform(values)
@@ -50,7 +53,7 @@ class Dataset:
                 self._scalers[scaled_column] = scaler
 
         columns = self._dataframe[self.metrics].columns
-        values = self._dataframe[self.metrics].values.T.astype('float32')
+        values = self._dataframe[self.metrics].values.T
         for scaler_class in scalers_classes:
             scaler = scalers_classes[scaler_class]()
             scaled_values = scaler.fit_transform(values)
@@ -61,7 +64,9 @@ class Dataset:
         return self._scalers
 
     def inverse_transform(self, column: str, x: np.ndarray):
-        return self._scalers[column].inverse_transform(x)
+        inv = self._scalers[column].inverse_transform(x.reshape(-1, 1)).reshape(-1)
+        assert inv.shape == x.shape
+        return inv
 
     # noinspection PyMethodMayBeStatic
     def _sliding_window(self, group_name: str, features: List[str], targets: List[str], dataframe: DataFrame,
@@ -88,11 +93,11 @@ class Dataset:
                 assert False
 
             x, y = sw(group_data)
-            y = y.astype('float32')
-            x = x.astype('float32')
+            y = y.astype('float')
+            x = x.astype('float')
 
             x_train.append(x[:-splits])
-            y_train.append(y.astype('float32')[:-splits])
+            y_train.append(y[:-splits])
 
             x_valid.append(x[-splits:])
             y_valid.append(y[-splits:])
@@ -141,6 +146,8 @@ class Dataset:
             stride=1, splits=horizon, dataframe=train
         )
 
+        train_splits = (train_splits[0], [train_splits[1][-1]])
+
         test_data, test_splits = self._sliding_window(
             group_name=group_name, features=features, targets=targets, history_window=history_window, horizon=horizon,
             stride=1, splits=1, dataframe=test
@@ -150,7 +157,13 @@ class Dataset:
             group_name=group_name, features=features, targets=targets, history_window=history_window, horizon=0,
             stride=1, splits=1, dataframe=predict
         )
+
+        final_train_data, final_train_splits = self._sliding_window(
+            group_name=group_name, features=features, targets=targets, history_window=history_window, horizon=horizon,
+            stride=1, splits=1, dataframe=self._dataframe
+        )
+
         # Drop targets
         predict_data = (predict_data[0], None)
 
-        return (train_data, train_splits), (test_data, test_splits), (predict_data, predict_splits)
+        return (train_data, train_splits), (test_data, test_splits), (predict_data, predict_splits), (final_train_data, final_train_splits)
