@@ -55,6 +55,7 @@ class OpenWorldDataset(Dataset):
 
         logger.info(f'Dataset range: [{self._dataframe.date.min().date()} {self._dataframe.date.max().date()}]')
         self._metrics = self._dataframe.columns.values[4:]
+        logger.info(f'Dataset metrics: {self._metrics}')
 
     def update_locations(self):
         self._dataframe['location'].cat.remove_unused_categories(inplace=True)
