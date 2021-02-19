@@ -5,9 +5,11 @@ from typing import List, Tuple, Optional, Dict, Any
 from pandas import DataFrame
 
 import numpy as np
+from pyts.preprocessing import StandardScaler
 from torch import Tensor
-from tsai.data.core import TSDatasets, TSDataLoaders
+from tsai.data.core import TSDatasets, TSDataLoaders, Categorize
 from tsai.data.external import check_data
+from tsai.data.preprocessing import TSStandardize
 
 from covid19.datasets.rnbo import Rnbo
 from covid19.datasets.open_world import OpenWorldDataset
@@ -78,11 +80,11 @@ class Experiment:
         x, y = data
 
         check_data(x, y, splits)
-
-        datasets = TSDatasets(x, y, splits=splits)
-
+        tfms = None #[None, [TSStandardize()]]
+        batch_tfms = TSStandardize(by_sample=False, by_var=True, verbose=True)
+        datasets = TSDatasets(x, y, splits=splits, tfms=tfms)
         return TSDataLoaders.from_dsets(
-            datasets.train, datasets.valid, bs=[self._batch_size, self._batch_size],
+            datasets.train, datasets.valid, bs=[self._batch_size, self._batch_size], batch_tfms=batch_tfms,
             num_workers=0, pin_memory=True)
 
     def create_learner(self, loaders: TSDataLoaders, load: bool = False, predict: bool = False):
@@ -154,6 +156,13 @@ class Experiment:
             country_filter=",".join(self._country_filter) if self._country_filter else 'all',
             region_filter=",".join(self._region_filter) if self._region_filter else 'all'
         )
+
+        # train_x, train_y = train[0]
+
+        # std_scaler = StandardScaler()
+        #
+        # train_x = std_scaler.fit_transform(train_x)
+        # train_y = std_scaler.fit_transform(train_y)
 
         train_results = self.train(loaders=self.get_dls(data=train[0], splits=train[1]), continue_train=False)
 

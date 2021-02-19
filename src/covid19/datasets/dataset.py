@@ -4,7 +4,7 @@ import numpy as np
 from pandas import DataFrame
 from logging import getLogger
 from tsai.data.preparation import SlidingWindow
-from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler, Normalizer, MaxAbsScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler, Normalizer, MaxAbsScaler, PowerTransformer
 
 logger = getLogger(__name__)
 
@@ -37,8 +37,9 @@ class Dataset:
             'origin': FakeScaler,
             'std': StandardScaler,
             'rob': RobustScaler,
-            'norm': Normalizer,
-            'xabs': MaxAbsScaler
+            # 'norm': Normalizer,
+            'xabs': MaxAbsScaler,
+            'pt': PowerTransformer
 
         }
         self._scalers = dict()
@@ -58,7 +59,7 @@ class Dataset:
             scaler = scalers_classes[scaler_class]()
             scaled_values = scaler.fit_transform(values)
             for k in range(scaled_values.shape[0]):
-                scaled_column = f'{columns[k]}_{scaler_class}_all'
+                scaled_column = f'{columns[k]}_{scaler_class}all'
                 self._dataframe[scaled_column] = scaled_values[k]
                 self._scalers[scaled_column] = scaler
         return self._scalers
@@ -119,8 +120,6 @@ class Dataset:
     def prepare(self, history_window: int, horizon: int) -> Tuple[DataFrame, DataFrame, DataFrame]:
         assert self._dataframe is not None, 'Scrape or load dataset before'
 
-        self.normalize()
-
         training_cutoff = self._dataframe.date.max() - timedelta(days=horizon)
         train_dataframe = self._dataframe[lambda x: x.date < training_cutoff]
 
@@ -133,7 +132,7 @@ class Dataset:
         return train_dataframe, test_dataframe, predict_dataframe
 
     def get_splits(self, group_name: str, features: List[str], targets: List[str], history_window: int, horizon: int):
-
+        # self.normalize(features + targets)
         train, test, predict = self.prepare(history_window=history_window, horizon=horizon)
         print_columns = ['date'] + features + targets
         logger.info(f'Train Data Head:\n{train[print_columns].head(5)}')

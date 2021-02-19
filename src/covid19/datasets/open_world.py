@@ -44,6 +44,8 @@ class OpenWorldDataset(Dataset):
         self._dataframe.date.index = PeriodIndex(self._dataframe.date, freq="D", name="Period")
         self.update_locations()
 
+        # self._dataframe['new_cases'] += 1e-8
+
         self._dataframe['new_cases_per_million'] = self._dataframe['new_cases_per_million'].abs()
         self._dataframe['total_cases_per_population'] = self._dataframe['total_cases'] / self._dataframe['population']
         self._dataframe['new_cases_per_population'] = self._dataframe['new_cases'] / self._dataframe['population']
