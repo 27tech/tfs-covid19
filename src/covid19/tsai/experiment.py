@@ -81,7 +81,7 @@ class Experiment:
 
         check_data(x, y, splits)
         tfms = None #[None, [TSStandardize()]]
-        batch_tfms = TSStandardize(by_sample=False, by_var=True, verbose=True)
+        batch_tfms = TSStandardize(by_sample=True, by_var=True, verbose=True)
         datasets = TSDatasets(x, y, splits=splits, tfms=tfms)
         return TSDataLoaders.from_dsets(
             datasets.train, datasets.valid, bs=[self._batch_size, self._batch_size], batch_tfms=batch_tfms,
