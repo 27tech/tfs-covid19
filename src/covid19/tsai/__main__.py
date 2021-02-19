@@ -59,9 +59,9 @@ if __name__ == "__main__":
 
         ],
         targets=[
-            # ['new_cases_per_population_origin']
+            ['new_cases_per_population_nx']
             # ['new_cases_nx'],
-            ['new_cases_per_million_origin_nx']
+            # ['new_cases_per_million_origin_nx']
             # ['new_cases_std']
             # ['existing_std'],
             # ['existing_nx'],
