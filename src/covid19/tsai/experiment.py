@@ -136,9 +136,9 @@ class Experiment:
             history_window=self._window,
             horizon=self._horizon)
 
-        self._dataset.data_frame[['date'] + self._features + self._targets].to_csv(
-            os.path.join(self._dir, 'dataset.csv')
-        )
+        preview = self._dataset.data_frame[['date'] + self._features + self._targets]
+        preview.to_csv(os.path.join(self._dir, 'dataset.csv'))
+        preview.describe().to_csv(os.path.join(self._dir, 'dataset_describe.csv'))
 
         results: Dict[str, Any] = dict(
             lr=self._lr,

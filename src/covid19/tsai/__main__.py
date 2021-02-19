@@ -15,10 +15,10 @@ if __name__ == "__main__":
         early_stop_patience=1000,
         epochs=10000,
         features=[
-            # ['total_cases_std'], #0.160758
+            ['total_cases_std'], #0.160758
             # ['total_cases_std', 'new_cases_std'] # 0.462105
             # ['new_cases_smoothed_nx'], 0.877701
-            ['total_cases_per_million_std'] # 0.20904667675495148
+            # ['total_cases_per_million_std'] # 0.20904667675495148
             # ['total_cases_per_population', 'new_cases_per_population'] # 0.131196
             # ['total_cases_per_population', 'new_cases_per_population', 'non_sick_per_population'], #0.293098
             # [
@@ -59,8 +59,8 @@ if __name__ == "__main__":
 
         ],
         targets=[
-            ['new_cases_per_million_origin']
-            # ['new_cases_nx'],
+            # ['new_cases_per_million_nx']
+            ['new_cases_nx'],
             # ['new_cases_per_population_origin']
             # ['new_cases_std']
             # ['existing_std'],
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         ],
         window=[56], #list(7 * h for h in range(1, 30)),
         horizon=[7], #list(7 * h for h in range(1, 20)),
-        batch_size=[128],
+        batch_size=[256],
         country_filter=[
             # ['United States', 'Italy', 'France', 'Germany', 'United Kingdom', 'Australia', 'Canada'],
             # ['Italy'],

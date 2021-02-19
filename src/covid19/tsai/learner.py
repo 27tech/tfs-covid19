@@ -25,7 +25,6 @@ class TSAILearner(Learner):
             metrics=[
                 mse, mae, rmse,
                 smape,
-                # MASE,
                 mape
             ],
             path=work_dir,
