@@ -78,7 +78,7 @@ if __name__ == "__main__":
         country_filter=[
             # ['United States', 'Italy', 'France', 'Germany', 'United Kingdom', 'Australia', 'Canada'],
             # ['Italy'],
-            # ['France'],
+            ['France'],
             # ['United States'],
 
         ],
