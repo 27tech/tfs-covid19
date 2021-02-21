@@ -11,7 +11,7 @@ if __name__ == "__main__":
     # d.filter_country(['Ukraine'])
     # print(d._dataframe)
     e = ExperimentSet(
-        models=[InceptionTimePlus17, InceptionTimePlus17x17],
+        models=[InceptionTimePlus17x17],
         lr=[1e-2],
         early_stop_patience=1000,
         epochs=10000,
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
         ],
         targets=[
-            ['new_cases_per_population_nx']
+            ['new_cases_origin']
             # ['new_cases_std'],
             # ['total_cases_per_population_std'],
             # ['new_cases_per_population_nx']
