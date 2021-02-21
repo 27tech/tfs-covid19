@@ -30,11 +30,11 @@ if __name__ == "__main__":
             #     'people_vaccinated_per_population'
             # ],
             [
-                'total_cases_per_population_nx',
-                'new_cases_per_population_nx',
-                'non_sick_per_population_nx',
-                'people_vaccinated_per_population_nx',
-                'people_fully_vaccinated_per_population_nx'
+                'total_cases_per_population_std',
+                'new_cases_per_population_std',
+                'non_sick_per_population_std',
+                'people_vaccinated_per_population_std',
+                'people_fully_vaccinated_per_population_std'
             ],
             # ['existing_nx'],
             # ['existing_std', 'confirmed_std', 'delta_existing_std'] + list(calendar.day_name),
@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
         ],
         targets=[
-            ['new_cases_per_million_nx']
+            ['new_cases_per_population_nx']
             # ['new_cases_std'],
             # ['total_cases_per_population_std'],
             # ['new_cases_per_population_nx']
