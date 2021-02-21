@@ -12,7 +12,7 @@ if __name__ == "__main__":
     # print(d._dataframe)
     e = ExperimentSet(
         models=[InceptionTimePlus17x17],
-        lr=[1e-2],
+        lr=[1e-5],
         early_stop_patience=1000,
         epochs=100000,
         features=[
