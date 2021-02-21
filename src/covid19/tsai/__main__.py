@@ -14,7 +14,7 @@ if __name__ == "__main__":
         models=[InceptionTimePlus17x17],
         lr=[1e-2],
         early_stop_patience=1000,
-        epochs=10000,
+        epochs=100000,
         features=[
             # ['total_cases_per_million_std', 'new_cases_per_million_std'], #0.160758
             # ['total_cases_per_population_std'],
