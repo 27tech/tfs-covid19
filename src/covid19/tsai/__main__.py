@@ -73,7 +73,7 @@ if __name__ == "__main__":
             # ['delta_confirmed_nx'],
             # ['delta_existing_nx']
         ],
-        window=[112], #list(7 * h for h in range(1, 30)),
+        window=[7], #list(7 * h for h in range(1, 30)),
         horizon=[7], #list(7 * h for h in range(1, 20)),
         batch_size=[256],
         country_filter=[
