@@ -50,13 +50,15 @@ class OpenWorldDataset(Dataset):
         self._dataframe['new_vaccinations'] = self._dataframe['new_vaccinations'].abs()
         self._dataframe['new_deaths'] = self._dataframe['new_deaths'].abs()
         self._dataframe['new_tests'] = self._dataframe['new_tests'].abs()
+        self._dataframe['population'] = self._dataframe['population'].abs()
         self._dataframe['new_cases_per_million'] = self._dataframe['new_cases_per_million'].abs()
         self._dataframe['total_cases_per_population'] = self._dataframe['total_cases'] / self._dataframe['population']
         self._dataframe['new_cases_per_population'] = self._dataframe['new_cases'] / self._dataframe['population']
         self._dataframe['non_sick_per_population'] = 1. - self._dataframe['total_cases_per_population']
         self._dataframe['people_vaccinated_per_population'] = self._dataframe['people_vaccinated'] / self._dataframe[
             'population']
-
+        self._dataframe['new_vaccinations_per_population'] = \
+            self._dataframe['new_vaccinations'].abs() / self._dataframe['population']
 
         self._dataframe['people_fully_vaccinated_per_population'] = \
             self._dataframe['people_fully_vaccinated'] / self._dataframe['population']

@@ -12,13 +12,13 @@ if __name__ == "__main__":
     # print(d._dataframe)
     e = ExperimentSet(
         models=[InceptionTimePlus17, InceptionTimePlus17x17],
-        lr=[1e-3],
+        lr=[1e-2],
         early_stop_patience=1000,
         epochs=1000,
         features=[
             # ['total_cases_per_million_std', 'new_cases_per_million_std'], #0.160758
             # ['total_cases_per_population_std'],
-            # ['total_cases_std', 'new_cases_std'] # 0.462105
+            ['total_cases', 'new_cases'] # 0.462105
             # ['new_cases_smoothed_nx'], 0.877701
             # ['total_cases_per_million_std'] # 0.20904667675495148
             # ['total_cases_per_population', 'new_cases_per_population'] # 0.131196
@@ -29,13 +29,14 @@ if __name__ == "__main__":
             #     'non_sick_per_population',
             #     'people_vaccinated_per_population'
             # ],
-            [
-                'total_cases_per_population_std',
-                'new_cases_per_population_std',
-                'non_sick_per_population_std',
-                'people_vaccinated_per_population_std',
-                'people_fully_vaccinated_per_population_std'
-            ],
+            # [
+            #     'total_cases_per_population_std',
+            #     'new_cases_per_population_std',
+            #     'non_sick_per_population_std',
+            #     'people_vaccinated_per_population_std',
+            #     'people_fully_vaccinated_per_population_std',
+            #     'new_vaccinations_per_population_std'
+            # ],
             # ['existing_nx'],
             # ['existing_std', 'confirmed_std', 'delta_existing_std'] + list(calendar.day_name),
             # ['existing_pop', 'confirmed_pop', 'none_sick_pop', 'delta_existing_pop'],
@@ -72,13 +73,13 @@ if __name__ == "__main__":
             # ['delta_confirmed_nx'],
             # ['delta_existing_nx']
         ],
-        window=[56], #list(7 * h for h in range(1, 30)),
+        window=[112], #list(7 * h for h in range(1, 30)),
         horizon=[7], #list(7 * h for h in range(1, 20)),
         batch_size=[256],
         country_filter=[
-            ['United States', 'Italy', 'France', 'Germany', 'United Kingdom', 'Australia', 'Canada'],
+            # ['United States', 'Italy', 'France', 'Germany', 'United Kingdom', 'Australia', 'Canada'],
             # ['Italy'],
-            # ['France'],
+            ['France'],
             # ['United States'],
 
         ],

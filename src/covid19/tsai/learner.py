@@ -19,7 +19,7 @@ class TSAILearner(Learner):
             cbs=[
                 CSVLogger(),
                 SaveModelCallback(with_opt=True),
-                # ReduceLROnPlateau(patience=100, min_lr=1e-6),
+                ReduceLROnPlateau(patience=10, min_lr=1e-5),
                 EarlyStoppingCallback(min_delta=0, patience=early_stop_patience)
             ],
             metrics=[
