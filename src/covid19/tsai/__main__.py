@@ -86,7 +86,7 @@ if __name__ == "__main__":
         # country_filter=[['Ukraine']],
         # region_filter=[['Kyiv']],
         region_filter=[None],
-        runs=2,
+        runs=1,
         do_predict=False
 
     )
