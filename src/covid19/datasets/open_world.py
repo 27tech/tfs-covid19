@@ -53,6 +53,7 @@ class OpenWorldDataset(Dataset):
         self._dataframe['people_vaccinated_per_population'] = self._dataframe['people_vaccinated'] / self._dataframe[
             'population']
 
+
         self._dataframe['people_fully_vaccinated_per_population'] = \
             self._dataframe['people_fully_vaccinated'] / self._dataframe['population']
 

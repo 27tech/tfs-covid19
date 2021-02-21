@@ -39,7 +39,7 @@ class Dataset:
             'rob': RobustScaler,
             # 'norm': Normalizer,
             'xabs': MaxAbsScaler,
-            'pt': PowerTransformer
+            # 'pt': PowerTransformer
 
         }
         self._scalers = dict()

@@ -1,3 +1,4 @@
+from covid19.models.inception import InceptionTimePlus17
 from .experiment import Experiment
 from .experiments_set import ExperimentSet
 import calendar
@@ -10,13 +11,13 @@ if __name__ == "__main__":
     # d.filter_country(['Ukraine'])
     # print(d._dataframe)
     e = ExperimentSet(
-        models=[InceptionTimePlus17x17],
+        models=[InceptionTimePlus17, InceptionTimePlus17x17],
         lr=[1e-3],
         early_stop_patience=1000,
-        epochs=10000,
+        epochs=1000,
         features=[
-            ['total_cases_per_population'], #0.160758
-            ['total_cases_per_population_std'],
+            ['total_cases_per_million_std', 'new_cases_per_million_std'], #0.160758
+            # ['total_cases_per_population_std'],
             # ['total_cases_std', 'new_cases_std'] # 0.462105
             # ['new_cases_smoothed_nx'], 0.877701
             # ['total_cases_per_million_std'] # 0.20904667675495148
@@ -60,10 +61,10 @@ if __name__ == "__main__":
 
         ],
         targets=[
-            # ['new_cases_per_million_nx']
+            ['new_cases_per_million_nx']
             # ['new_cases_std'],
-            ['total_cases_per_population_std'],
-            ['new_cases_per_population_origin']
+            # ['total_cases_per_population_std'],
+            # ['new_cases_per_population_nx']
             # ['new_cases_std']
             # ['existing_std'],
             # ['existing_nx'],
@@ -84,7 +85,7 @@ if __name__ == "__main__":
         # country_filter=[['Ukraine']],
         # region_filter=[['Kyiv']],
         region_filter=[None],
-        runs=1,
+        runs=2,
         do_predict=False
 
     )

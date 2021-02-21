@@ -10,7 +10,7 @@ from torch import Tensor
 from tsai.data.core import TSDatasets, TSDataLoaders, Categorize
 from tsai.data.external import check_data
 from tsai.data.preprocessing import TSStandardize
-
+from torch import sigmoid
 from covid19.datasets.rnbo import Rnbo
 from covid19.datasets.open_world import OpenWorldDataset
 from .learner import TSAILearner
@@ -100,7 +100,9 @@ class Experiment:
         records = []
 
         for record_idx, prediction in enumerate(preds):
+            # prediction = sigmoid(prediction)
             prediction = prediction.numpy()
+
             scaled_prediction = self._dataset.inverse_transform(column=self._targets[0], x=prediction)
             # input_ = inputs[record_idx]
             for time_idx, target_value in enumerate(scaled_prediction):
