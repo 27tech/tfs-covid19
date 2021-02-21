@@ -76,9 +76,9 @@ if __name__ == "__main__":
         horizon=[7], #list(7 * h for h in range(1, 20)),
         batch_size=[256],
         country_filter=[
-            # ['United States', 'Italy', 'France', 'Germany', 'United Kingdom', 'Australia', 'Canada'],
+            ['United States', 'Italy', 'France', 'Germany', 'United Kingdom', 'Australia', 'Canada'],
             # ['Italy'],
-            ['France'],
+            # ['France'],
             # ['United States'],
 
         ],
