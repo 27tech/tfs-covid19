@@ -146,7 +146,7 @@ class Dataset:
             stride=1, splits=horizon * 2, dataframe=train
         )
         train_splits_x = []
-        for i in range(100):
+        for i in range(10000):
             train_splits_x.extend(train_splits[0])
         train_splits = (train_splits_x, [train_splits[1][-1]])
 
