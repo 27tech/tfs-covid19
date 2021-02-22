@@ -120,8 +120,9 @@ class Dataset:
     def prepare(self, history_window: int, horizon: int) -> Tuple[DataFrame, DataFrame, DataFrame]:
         assert self._dataframe is not None, 'Scrape or load dataset before'
 
-        training_cutoff = self._dataframe.date.max() - timedelta(days=horizon)
-        train_dataframe = self._dataframe[lambda x: x.date < training_cutoff]
+        # training_cutoff = self._dataframe.date.max() - timedelta(days=horizon)
+        # train_dataframe = self._dataframe[lambda x: x.date < training_cutoff]
+        train_dataframe = self._dataframe.copy()
 
         testing_cutoff = self._dataframe.date.max() - timedelta(days=history_window + horizon)
         test_dataframe = self._dataframe[lambda x: x.date >= testing_cutoff]
@@ -142,10 +143,12 @@ class Dataset:
 
         train_data, train_splits = self._sliding_window(
             group_name=group_name, features=features, targets=targets, history_window=history_window, horizon=horizon,
-            stride=1, splits=horizon, dataframe=train
+            stride=1, splits=horizon * 2, dataframe=train
         )
-
-        train_splits = (train_splits[0], [train_splits[1][-1]])
+        train_splits_x = []
+        for i in range(100):
+            train_splits_x.extend(train_splits[0])
+        train_splits = (train_splits_x, [train_splits[1][-1]])
 
         test_data, test_splits = self._sliding_window(
             group_name=group_name, features=features, targets=targets, history_window=history_window, horizon=horizon,

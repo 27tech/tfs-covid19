@@ -30,7 +30,7 @@ class Experiment:
         self._name: str = datetime.now().strftime(f'%Y-%m-%d %H:%M:%S {model_class.__name__}')
         self._group_name = group_name
         self._group_name_cat = f'{group_name}_cat'
-        self._features = features + [self._group_name_cat]
+        self._features = features # + [self._group_name_cat]
         self._targets = targets
         self._window = window
         self._horizon = horizon
@@ -65,7 +65,7 @@ class Experiment:
 
         self._features_vocab = {k: v for v, k in enumerate(self._features_idx)}
 
-        self._group_name_cat_idx = self._features_vocab[self._group_name_cat]
+        # self._group_name_cat_idx = self._features_vocab[self._group_name_cat]
 
         self._target_name = "_".join(self._targets[0].split('_')[0:-1])
 

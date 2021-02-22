@@ -4,21 +4,32 @@ from .experiments_set import ExperimentSet
 import calendar
 from covid19.models import Transformer
 from tsai.models.InceptionTimePlus import InceptionTimePlus17x17
+from tsai.models.TST import TST
+from tsai.models.RNNPlus import GRUPlus, LSTMPlus
 from covid19.datasets.open_world import OpenWorldDataset
+
+class LSTMPlus1(LSTMPlus):
+    def __init__(self, args, **kwargs):
+        super(LSTMPlus1, self).__init__(*args, **kwargs, hidden_size=512)
 
 if __name__ == "__main__":
     # d = OpenWorldDataset()
     # d.filter_country(['Ukraine'])
     # print(d._dataframe)
     e = ExperimentSet(
-        models=[InceptionTimePlus17x17],
-        lr=[1e-5],
-        early_stop_patience=1000,
+        models=[
+            LSTMPlus,
+            # GRUPlus
+            # TST,
+            # InceptionTimePlus17x17
+        ],
+        lr=[1e-3],
+        early_stop_patience=10000,
         epochs=100000,
         features=[
             # ['total_cases_per_million_std', 'new_cases_per_million_std'], #0.160758
             # ['total_cases_per_population_std'],
-            ['total_cases', 'new_cases'] # 0.462105
+            ['total_cases_std', 'new_cases_std'] # 0.462105
             # ['new_cases_smoothed_nx'], 0.877701
             # ['total_cases_per_million_std'] # 0.20904667675495148
             # ['total_cases_per_population', 'new_cases_per_population'] # 0.131196
@@ -62,7 +73,7 @@ if __name__ == "__main__":
 
         ],
         targets=[
-            ['new_cases_origin']
+            ['new_cases_nx']
             # ['new_cases_std'],
             # ['total_cases_per_population_std'],
             # ['new_cases_per_population_nx']
@@ -73,14 +84,14 @@ if __name__ == "__main__":
             # ['delta_confirmed_nx'],
             # ['delta_existing_nx']
         ],
-        window=[7], #list(7 * h for h in range(1, 30)),
+        window=[56], #list(7 * h for h in range(1, 30)),
         horizon=[7], #list(7 * h for h in range(1, 20)),
         batch_size=[256],
         country_filter=[
             # ['United States', 'Italy', 'France', 'Germany', 'United Kingdom', 'Australia', 'Canada'],
             # ['Italy'],
-            ['France'],
-            # ['United States'],
+            # ['France'],
+            ['United States'],
 
         ],
         # country_filter=[['Ukraine']],
