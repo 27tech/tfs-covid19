@@ -23,10 +23,10 @@ if __name__ == "__main__":
             # TST,
             InceptionTimePlus17x17
         ],
-        lr=[1.],
+        lr=[1e-1],
         early_stop_patience=100,
-        epochs=100000,
-        # epochs=2,
+        # epochs=100000,
+        epochs=100,
         features=[
             # ['total_cases_per_million_std', 'new_cases_per_million_std'], #0.160758
             # ['total_cases_per_population_std'],
