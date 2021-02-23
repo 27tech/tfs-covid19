@@ -2,6 +2,8 @@ import os
 
 from fastai.callback.all import SaveModelCallback, CSVLogger, EarlyStoppingCallback, ReduceLROnPlateau
 from fastai.learner import Learner
+from fastai.losses import MSELossFlat
+from torch.nn import MSELoss
 from fastai.metrics import mae, mse
 
 from covid19.config import CHECKPOINTS_DIR
@@ -29,5 +31,5 @@ class TSAILearner(Learner):
             ],
             path=work_dir,
             model_dir='',
-            # loss_func=mape
+            loss_func=mape, #MSELoss()
         )
