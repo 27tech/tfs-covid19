@@ -48,6 +48,7 @@ class OpenWorldDataset(Dataset):
         self._dataframe['new_cases'] = self._dataframe['new_cases'].abs().astype(np.float32)
         self._dataframe['total_cases'] = self._dataframe['total_cases'].abs().astype(np.float32)
         self._dataframe['new_vaccinations'] = self._dataframe['new_vaccinations'].abs().astype(np.float32)
+        self._dataframe['people_fully_vaccinated'] = self._dataframe['people_fully_vaccinated'].abs().astype(np.float32)
         self._dataframe['new_deaths'] = self._dataframe['new_deaths'].abs()
         self._dataframe['new_tests'] = self._dataframe['new_tests'].abs()
         self._dataframe['population'] = self._dataframe['population'].abs()
@@ -58,7 +59,7 @@ class OpenWorldDataset(Dataset):
         self._dataframe['people_vaccinated_per_population'] = self._dataframe['people_vaccinated'] / self._dataframe[
             'population']
         self._dataframe['new_vaccinations_per_population'] = \
-            self._dataframe['new_vaccinations'].abs() / self._dataframe['population']
+            self._dataframe['new_vaccinations'] / self._dataframe['population']
 
         self._dataframe['people_fully_vaccinated_per_population'] = \
             self._dataframe['people_fully_vaccinated'] / self._dataframe['population']
