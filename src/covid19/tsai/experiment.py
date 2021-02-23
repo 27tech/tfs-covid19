@@ -6,6 +6,7 @@ from pandas import DataFrame
 
 import numpy as np
 from pyts.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from torch import Tensor
 from tsai.data.core import TSDatasets, TSDataLoaders, Categorize
 from tsai.data.external import check_data
@@ -159,22 +160,28 @@ class Experiment:
             region_filter=",".join(self._region_filter) if self._region_filter else 'all'
         )
 
-        class StandardScaler3D(StandardScaler):
+        class Scaler3DMixin:
             def fit(self, X=None, y=None):
                 flat = X.reshape(-1, X.shape[-1])
-                return super(StandardScaler3D, self).fit(X=flat)
+                return super().fit(X=flat)
 
             def transform(self, X):
                 flat = X.reshape(-1, X.shape[-1])
-                flat = super(StandardScaler3D, self).transform(X=flat)
+                flat = super().transform(X=flat)
                 return flat.reshape(X.shape)
 
             def fit_transform_splits(self, X: np.ndarray, splits: np.ndarray):
                 self.fit(X[splits])
                 return self.transform(X)
 
+        class StandardScaler3D(Scaler3DMixin, StandardScaler):
+            pass
+
+        class MinMaxScaler3D(Scaler3DMixin, MinMaxScaler):
+            pass
+
         scaler_x = StandardScaler3D()
-        scaler_y = StandardScaler3D()
+        scaler_y = MinMaxScaler3D()
 
         train_data, train_splits = train
 
