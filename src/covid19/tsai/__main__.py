@@ -20,8 +20,8 @@ if __name__ == "__main__":
         models=[
             # LSTMPlus,
             # GRUPlus
-            TST,
-            # InceptionTimePlus17x17
+            # TST,
+            InceptionTimePlus17x17
         ],
         lr=[1e-1],
         early_stop_patience=100,
