@@ -30,7 +30,7 @@ class Experiment:
         self._name: str = datetime.now().strftime(f'%Y-%m-%d %H:%M:%S {model_class.__name__}')
         self._group_name = group_name
         self._group_name_cat = f'{group_name}_cat'
-        self._features = features # + [self._group_name_cat]
+        self._features = features + [self._group_name_cat]
         self._targets = targets
         self._window = window
         self._horizon = horizon
@@ -65,7 +65,7 @@ class Experiment:
 
         self._features_vocab = {k: v for v, k in enumerate(self._features_idx)}
 
-        # self._group_name_cat_idx = self._features_vocab[self._group_name_cat]
+        self._group_name_cat_idx = self._features_vocab[self._group_name_cat]
 
         self._target_name = "_".join(self._targets[0].split('_')[0:-1])
 
@@ -108,7 +108,7 @@ class Experiment:
             for time_idx, target_value in enumerate(scaled_prediction):
                 current_date = last_date + timedelta(days=time_idx + time_shift)
                 # time_preds = group_preds[time_idx]
-                group_cat = record_idx # input_[time_idx][self._group_name_cat_idx].long().item()
+                group_cat = record_idx  # input_[time_idx][self._group_name_cat_idx].long().item()
                 group_name = self._dataset.data_frame[self._group_name].cat.categories[group_cat]
                 records.append(
                     {
@@ -130,6 +130,8 @@ class Experiment:
         logger.info(f'Running experiment: {self._name}')
         logger.info(f'Features: {",".join(self._features)}')
         logger.info(f'Targets: {",".join(self._targets)}')
+
+        self._features.pop(self._features.index(self._group_name_cat))
 
         train, test, predict, final_train = self._dataset.get_splits(
             group_name=self._group_name,
@@ -157,20 +159,42 @@ class Experiment:
             region_filter=",".join(self._region_filter) if self._region_filter else 'all'
         )
 
-        # train_x, train_y = train[0]
+        class StandardScaler3D(StandardScaler):
+            def fit(self, X=None, y=None):
+                flat = X.reshape(-1, X.shape[-1])
+                return super(StandardScaler3D, self).fit(X=flat)
 
-        # std_scaler = StandardScaler()
-        #
-        # train_x = std_scaler.fit_transform(train_x)
-        # train_y = std_scaler.fit_transform(train_y)
+            def transform(self, X):
+                flat = X.reshape(-1, X.shape[-1])
+                flat = super(StandardScaler3D, self).transform(X=flat)
+                return flat.reshape(X.shape)
 
-        train_results = self.train(loaders=self.get_dls(data=train[0], splits=train[1]), continue_train=False)
+            def fit_transform_splits(self, X: np.ndarray, splits: np.ndarray):
+                self.fit(X[splits])
+                return self.transform(X)
+
+        scaler_x = StandardScaler3D()
+        scaler_y = StandardScaler3D()
+
+        train_data, train_splits = train
+
+        train_data = (scaler_x.fit_transform_splits(X=train_data[0], splits=train_splits[0]),
+                      scaler_y.fit_transform_splits(X=train_data[1], splits=train_splits[0]))
+
+        train_results = self.train(loaders=self.get_dls(data=train_data, splits=train_splits),
+                                   continue_train=False)
 
         for key in train_results:
             results[f'Train {key}'] = train_results[key]
 
+        test_data = test[0]
+        test_data = (
+            scaler_x.transform(test_data[0]),
+            scaler_y.transform(test_data[1])
+        )
+
         test_results, test_inputs, test_predictions, test_targets = self.test(
-            loaders=self.get_dls(data=test[0], splits=test[1])
+            loaders=self.get_dls(data=test_data, splits=test[1])
         )
 
         results.update(test_results)

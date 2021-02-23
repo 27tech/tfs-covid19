@@ -45,9 +45,9 @@ class OpenWorldDataset(Dataset):
         self.update_locations()
 
         # self._dataframe['new_cases'] += 1e-8
-        self._dataframe['new_cases'] = self._dataframe['new_cases'].abs()
-        self._dataframe['total_cases'] = self._dataframe['total_cases'].abs()
-        self._dataframe['new_vaccinations'] = self._dataframe['new_vaccinations'].abs()
+        self._dataframe['new_cases'] = self._dataframe['new_cases'].abs().astype(np.float32)
+        self._dataframe['total_cases'] = self._dataframe['total_cases'].abs().astype(np.float32)
+        self._dataframe['new_vaccinations'] = self._dataframe['new_vaccinations'].abs().astype(np.float32)
         self._dataframe['new_deaths'] = self._dataframe['new_deaths'].abs()
         self._dataframe['new_tests'] = self._dataframe['new_tests'].abs()
         self._dataframe['population'] = self._dataframe['population'].abs()

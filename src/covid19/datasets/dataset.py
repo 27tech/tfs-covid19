@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Tuple, List, Iterable
+from typing import Tuple, List, Iterable, Optional
 import numpy as np
 from pandas import DataFrame
 from logging import getLogger
@@ -70,7 +70,7 @@ class Dataset:
         return inv
 
     # noinspection PyMethodMayBeStatic
-    def _sliding_window(self, group_name: str, features: List[str], targets: List[str], dataframe: DataFrame,
+    def _sliding_window(self, group_name: str, features: List[str], targets: Optional[List[str]], dataframe: DataFrame,
                         history_window: int, horizon: int, stride: int, splits: int = 0, skip_missing=False) -> \
             Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
 
@@ -94,25 +94,33 @@ class Dataset:
                 assert False
 
             x, y = sw(group_data)
-            y = y.astype('float')
-            x = x.astype('float')
+            # y = y.astype('float')
+            # x = x.astype('float')
 
             x_train.append(x[:-splits])
-            y_train.append(y[:-splits])
-
             x_valid.append(x[-splits:])
-            y_valid.append(y[-splits:])
 
-        y_valid = np.vstack(y_valid)
+            if targets:
+                y_train.append(y[:-splits])
+                y_valid.append(y[-splits:])
+
+        if targets:
+            y_valid = np.vstack(y_valid)
+            y_train = np.vstack(y_train)
+
         x_valid = np.vstack(x_valid)
-        y_train = np.vstack(y_train)
         x_train = np.vstack(x_train)
 
         x_all = np.vstack([x_train, x_valid])
-        y_all = np.vstack([y_train, y_valid])
-        assert len(y_valid) == splits * len(dataframe[group_name].unique())
-        validation_steps = len(y_valid)
-        total_indexes = list(range(y_all.shape[0]))
+
+        y_all = None
+
+        if targets:
+            y_all = np.vstack([y_train, y_valid])
+            assert len(y_valid) == splits * len(dataframe[group_name].unique())
+
+        validation_steps = len(x_valid)
+        total_indexes = list(range(x_all.shape[0]))
         split_indexes = np.asarray(total_indexes[:-validation_steps]), np.asarray(total_indexes[-validation_steps:])
 
         return (x_all, y_all), split_indexes
@@ -146,7 +154,7 @@ class Dataset:
             stride=1, splits=horizon * 2, dataframe=train
         )
         train_splits_x = []
-        for i in range(10000):
+        for i in range(1):
             train_splits_x.extend(train_splits[0])
         train_splits = (train_splits_x, [train_splits[1][-1]])
 
@@ -156,7 +164,7 @@ class Dataset:
         )
 
         predict_data, predict_splits = self._sliding_window(
-            group_name=group_name, features=features, targets=targets, history_window=history_window, horizon=0,
+            group_name=group_name, features=features, targets=None, history_window=history_window, horizon=0,
             stride=1, splits=1, dataframe=predict
         )
 
@@ -164,8 +172,5 @@ class Dataset:
             group_name=group_name, features=features, targets=targets, history_window=history_window, horizon=horizon,
             stride=1, splits=1, dataframe=self._dataframe
         )
-
-        # Drop targets
-        predict_data = (predict_data[0], None)
 
         return (train_data, train_splits), (test_data, test_splits), (predict_data, predict_splits), (final_train_data, final_train_splits)
