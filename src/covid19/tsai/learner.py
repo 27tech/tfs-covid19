@@ -31,5 +31,5 @@ class TSAILearner(Learner):
             ],
             path=work_dir,
             model_dir='',
-            loss_func=L1Loss()
+            loss_func=MSELoss()
         )
