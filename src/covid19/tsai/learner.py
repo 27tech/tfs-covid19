@@ -2,7 +2,7 @@ import os
 
 from fastai.callback.all import SaveModelCallback, CSVLogger, EarlyStoppingCallback, ReduceLROnPlateau
 from fastai.learner import Learner
-from fastai.losses import MSELossFlat
+from fastai.losses import MSELossFlat, L1LossFlat
 from torch.nn import MSELoss, L1Loss, NLLLoss
 from fastai.metrics import mae, mse
 
@@ -21,7 +21,7 @@ class TSAILearner(Learner):
             cbs=[
                 CSVLogger(),
                 SaveModelCallback(with_opt=True),
-                # ReduceLROnPlateau(patience=5, min_lr=1e-4),
+                ReduceLROnPlateau(patience=5, min_lr=1e-4),
                 EarlyStoppingCallback(min_delta=0, patience=early_stop_patience)
             ],
             metrics=[
@@ -31,5 +31,5 @@ class TSAILearner(Learner):
             ],
             path=work_dir,
             model_dir='',
-            # loss_func=MSELoss(reduction='sum')
+            loss_func=L1LossFlat
         )
