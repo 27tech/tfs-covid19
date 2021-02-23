@@ -23,8 +23,8 @@ if __name__ == "__main__":
             # TST,
             InceptionTimePlus17x17
         ],
-        lr=[1e-3],
-        early_stop_patience=10,
+        lr=[1e-1],
+        early_stop_patience=100,
         epochs=100000,
         features=[
             # ['total_cases_per_million_std', 'new_cases_per_million_std'], #0.160758
@@ -75,10 +75,10 @@ if __name__ == "__main__":
 
         ],
         targets=[
-            ['new_cases_origin']
+            # ['new_cases_origin']
             # ['new_cases_std'],
             # ['total_cases_per_population_std'],
-            # ['new_cases_per_population_nx']
+            ['new_cases_origin']
             # ['new_cases_std']
             # ['existing_std'],
             # ['existing_nx'],
