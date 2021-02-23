@@ -33,8 +33,8 @@ class Dataset:
                 return np.asarray(x)
 
         scalers_classes = {
-            'nx': MinMaxScaler,
             'origin': FakeScaler,
+            'nx': MinMaxScaler,
             'std': StandardScaler,
             'rob': RobustScaler,
             # 'norm': Normalizer,
@@ -94,13 +94,13 @@ class Dataset:
                 assert False
 
             x, y = sw(group_data)
-            # y = y.astype('float')
-            # x = x.astype('float')
+            x = x.astype(np.float32)
 
             x_train.append(x[:-splits])
             x_valid.append(x[-splits:])
 
             if targets:
+                y = y.astype(np.float32)
                 y_train.append(y[:-splits])
                 y_valid.append(y[-splits:])
 

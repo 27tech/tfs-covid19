@@ -6,7 +6,7 @@ from pandas import DataFrame
 
 import numpy as np
 from pyts.preprocessing import StandardScaler
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, Normalizer
 from torch import Tensor
 from tsai.data.core import TSDatasets, TSDataLoaders, Categorize
 from tsai.data.external import check_data
@@ -180,13 +180,20 @@ class Experiment:
         class MinMaxScaler3D(Scaler3DMixin, MinMaxScaler):
             pass
 
-        scaler_x = StandardScaler3D()
-        scaler_y = MinMaxScaler3D()
+        class Normalizer3D(Scaler3DMixin, Normalizer):
+            pass
+
+        scaler_x = MinMaxScaler3D()
+        scaler_y = MinMaxScaler3D(feature_range=(-1, 1))
 
         train_data, train_splits = train
 
-        train_data = (scaler_x.fit_transform_splits(X=train_data[0], splits=train_splits[0]),
-                      scaler_y.fit_transform_splits(X=train_data[1], splits=train_splits[0]))
+        train_data = (
+            scaler_x.fit_transform_splits(X=train_data[0], splits=train_splits[0]),
+            # scaler_y.fit_transform_splits(X=train_data[1], splits=train_splits[0]))
+            train_data[1]
+        )
+
 
         train_results = self.train(loaders=self.get_dls(data=train_data, splits=train_splits),
                                    continue_train=False)
@@ -197,7 +204,8 @@ class Experiment:
         test_data = test[0]
         test_data = (
             scaler_x.transform(test_data[0]),
-            scaler_y.transform(test_data[1])
+            # scaler_y.transform(test_data[1])
+            test_data[1]
         )
 
         test_results, test_inputs, test_predictions, test_targets = self.test(
