@@ -296,12 +296,12 @@ class Experiment:
             # epoch_time_secs=duration.total_seconds() / epochs
         )
 
-        monitor_idx = learner.recorder.metric_names.index(learner.recorder.save_model.monitor)
-        monitor_values = np.asarray(learner.recorder.values)
-        best_values = monitor_values[np.where(monitor_values.T[monitor_idx] == learner.recorder.save_model.best)][0]
+        # monitor_idx = learner.recorder.metric_names.index(learner.recorder.save_model.monitor)
+        # monitor_values = np.asarray(learner.recorder.values)
+        # best_values = monitor_values[np.where(monitor_values.T[monitor_idx] == learner.recorder.save_model.best)][0]
 
-        for idx, metric in enumerate(learner.recorder.metric_names[1:-1]):
-            result[metric] = best_values[idx]
+        # for idx, metric in enumerate(learner.recorder.metric_names[1:-1]):
+        #     result[metric] = best_values[idx]
         return result
 
     def test(self, loaders: TSDataLoaders) -> Tuple[Dict, Tensor, Tensor, Tensor]:
