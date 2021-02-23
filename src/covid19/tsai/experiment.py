@@ -188,11 +188,11 @@ class Experiment:
 
         train_data, train_splits = train
 
-        train_data = (
-            scaler_x.fit_transform_splits(X=train_data[0], splits=train_splits[0]),
-            # scaler_y.fit_transform_splits(X=train_data[1], splits=train_splits[0]))
-            train_data[1]
-        )
+        # train_data = (
+        #     scaler_x.fit_transform_splits(X=train_data[0], splits=train_splits[0]),
+        #     # scaler_y.fit_transform_splits(X=train_data[1], splits=train_splits[0]))
+        #     train_data[1]
+        # )
 
 
         train_results = self.train(loaders=self.get_dls(data=train_data, splits=train_splits),
@@ -202,11 +202,11 @@ class Experiment:
             results[f'Train {key}'] = train_results[key]
 
         test_data = test[0]
-        test_data = (
-            scaler_x.transform(test_data[0]),
-            # scaler_y.transform(test_data[1])
-            test_data[1]
-        )
+        # test_data = (
+        #     scaler_x.transform(test_data[0]),
+        #     # scaler_y.transform(test_data[1])
+        #     test_data[1]
+        # )
 
         test_results, test_inputs, test_predictions, test_targets = self.test(
             loaders=self.get_dls(data=test_data, splits=test[1])

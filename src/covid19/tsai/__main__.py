@@ -41,8 +41,8 @@ if __name__ == "__main__":
             #     'people_vaccinated_per_population'
             # ],
             [
-                'total_cases', 'new_cases', 'new_vaccinations',
-                'people_fully_vaccinated'
+                'total_cases_nx', 'new_cases_nx', 'new_vaccinations_nx',
+                'people_fully_vaccinated_nx'
                 # 'new_cases_smoothed_nx',
                 # 'total_cases_per_population_std',
                 # 'new_cases_per_population_std',
