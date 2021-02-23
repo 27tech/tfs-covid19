@@ -3,7 +3,7 @@ from .experiment import Experiment
 from .experiments_set import ExperimentSet
 import calendar
 from covid19.models import Transformer
-from tsai.models.InceptionTimePlus import InceptionTimePlus17x17
+from tsai.models.InceptionTimePlus import InceptionTimePlus17x17, InceptionTimePlus62x62
 from tsai.models.TST import TST
 from tsai.models.RNNPlus import GRUPlus, LSTMPlus
 from covid19.datasets.open_world import OpenWorldDataset
@@ -21,7 +21,7 @@ if __name__ == "__main__":
             # LSTMPlus,
             # GRUPlus
             # TST,
-            InceptionTimePlus17x17
+            InceptionTimePlus62x62
         ],
         lr=[1e-1],
         early_stop_patience=100,
@@ -87,7 +87,7 @@ if __name__ == "__main__":
             # ['delta_confirmed_nx'],
             # ['delta_existing_nx']
         ],
-        window=[180], #list(7 * h for h in range(1, 30)),
+        window=[14], #list(7 * h for h in range(1, 30)),
         horizon=[7], #list(7 * h for h in range(1, 20)),
         batch_size=[512],
         country_filter=[
