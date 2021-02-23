@@ -280,12 +280,12 @@ class Experiment:
             # learn.fine_tune(10)
             # print(r)
             # print(learn.loss_func)
-            # logger.info('Finding LR')
-            # lr_find = learner.lr_find()
+            logger.info('Finding LR')
+            lr_find = learner.lr_find()
             # logger.info(f'LR Find: {lr_find}')
             lr_find = None
-            # learner.fit_one_cycle(self._epochs, self._lr)
-            learner.fit(self._epochs, self._lr)
+            learner.fit_one_cycle(self._epochs, self._lr)
+            # learner.fit(self._epochs, self._lr)
         duration = datetime.now() - start_time
         epochs = learner.recorder.log[0] + 1
         result = dict(
