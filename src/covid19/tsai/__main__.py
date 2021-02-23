@@ -42,7 +42,7 @@ if __name__ == "__main__":
             # ],
             [
                 'total_cases_nx', 'new_cases_nx', 'new_vaccinations_nx',
-                'people_fully_vaccinated_nx'
+                'people_fully_vaccinated_nx', 'new_deaths_nx'
                 # 'new_cases_smoothed_nx',
                 # 'total_cases_per_population_std',
                 # 'new_cases_per_population_std',
