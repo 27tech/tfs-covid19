@@ -20,8 +20,8 @@ if __name__ == "__main__":
         models=[
             # LSTMPlus,
             # GRUPlus
-            # TST,
-            InceptionTimePlus62x62
+            TST,
+            # InceptionTimePlus17x17
         ],
         lr=[1e-1],
         early_stop_patience=100,
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         ],
         window=[14], #list(7 * h for h in range(1, 30)),
         horizon=[7], #list(7 * h for h in range(1, 20)),
-        batch_size=[512],
+        batch_size=[64],
         country_filter=[
             # ['United States', 'Italy', 'France', 'Germany', 'United Kingdom', 'Australia', 'Canada'],
             # ['Italy'],
