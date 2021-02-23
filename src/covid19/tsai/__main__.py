@@ -50,7 +50,7 @@ if __name__ == "__main__":
                 # 'people_vaccinated_per_population_std',
                 # 'people_fully_vaccinated_per_population_std',
                 # 'new_vaccinations_per_population_std'
-            ],
+            ] + list(calendar.day_name),
             # ['existing_nx'],
             # ['existing_std', 'confirmed_std', 'delta_existing_std'] + list(calendar.day_name),
             # ['existing_pop', 'confirmed_pop', 'none_sick_pop', 'delta_existing_pop'],

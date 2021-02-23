@@ -8,6 +8,7 @@ from datetime import date, datetime
 from pandas import DataFrame, read_csv, PeriodIndex, read_pickle, to_datetime
 import numpy as np
 from .dataset import Dataset
+import calendar
 
 logger = getLogger(__name__)
 
@@ -64,9 +65,14 @@ class OpenWorldDataset(Dataset):
         self._dataframe['people_fully_vaccinated_per_population'] = \
             self._dataframe['people_fully_vaccinated'] / self._dataframe['population']
 
+        for idx, day_name in enumerate(calendar.day_name):
+            self._dataframe[day_name] = self._dataframe['date'].apply(
+                lambda x: 1. if x.day_name() == day_name else .0)
+
         logger.info(f'Dataset range: [{self._dataframe.date.min().date()} {self._dataframe.date.max().date()}]')
         self._metrics = self._dataframe.columns.values[4:]
         logger.info(f'Dataset metrics: {self._metrics}')
+
 
     def update_locations(self):
         self._dataframe['location'].cat.remove_unused_categories(inplace=True)
